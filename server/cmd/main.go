@@ -7,20 +7,20 @@ import (
 )
 
 func main() {
-	pool := threadpool.New(4, 1)
+	pool := threadpool.New(10, 1)
 	pool.MustRun()
 
 	id := atomic.Int64{}
 	id.Store(0)
 
-	for range 10 {
+	for range 100 {
 		task := threadpool.NewTask(id.Add(1), func() error {
-			time.Sleep(9 * time.Second)
+			time.Sleep(1 * time.Second)
 			return nil
 		})
 
 		pool.AddTask(task)
 	}
-	time.Sleep(10 * time.Second)
-	pool.Terminate()
+	time.Sleep(6 * time.Second)
+	pool.MustTerminate()
 }

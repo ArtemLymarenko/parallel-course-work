@@ -1,9 +1,5 @@
 package priorityqueue
 
-import (
-	"errors"
-)
-
 type CompareFunc[T any] func(a *T, b *T) bool
 
 type heap[T any] struct {
@@ -39,20 +35,20 @@ func (h *heap[T]) Push(element *T) {
 	h.siftUp(lastIdx)
 }
 
-func (h *heap[T]) Pop() (removed *T, err error) {
+func (h *heap[T]) Pop() *T {
 	heapSize := h.Size()
 	if heapSize == 0 {
-		return removed, errors.New("heap is empty")
+		return nil
 	}
 
 	lastIdx := heapSize - 1
 	h.swap(0, lastIdx)
 
-	removed = h.data[lastIdx]
+	removed := h.data[lastIdx]
 	h.data = h.data[:lastIdx]
 	h.siftDown(0)
 
-	return removed, nil
+	return removed
 }
 
 func (h *heap[T]) siftDown(idx int) {

@@ -5,42 +5,36 @@ import (
 	"log"
 	"parallel-course-work/pkg/priorityqueue"
 	"sync"
-	"time"
 )
 
 type TaskPriorityQueue interface {
 	Size() int
 	Push(element *Task)
-	Pop() (*Task, error)
+	Pop() *Task
 	GetItems() []*Task
 	Empty() bool
-}
-
-type State struct {
-	isInitialized bool
-	isTerminated  bool
-	isPaused      bool
 }
 
 type SyncPrimitives struct {
 	mainWaiter      *sync.Cond
 	secondaryWaiter *sync.Cond
+	gracefulWaiter  *sync.Cond
 	commonLock      sync.RWMutex
 	printLock       sync.RWMutex
 	wg              sync.WaitGroup
 }
 
 type ThreadPool struct {
-	mainThreadCount      int
-	secondaryThreadCount int
 	mainTaskQueue        TaskPriorityQueue
 	secondaryTaskQueue   TaskPriorityQueue
-	state                State
 	sync                 *SyncPrimitives
+	mainThreadCount      int
+	secondaryThreadCount int
+	isInitialized        bool
+	isTerminated         bool
 }
 
 func New(mainThreadCount, secondaryThreadCount int) *ThreadPool {
-	state := State{false, false, false}
 	compareFunc := func(a, b *Task) bool {
 		return a.CreatedAt.After(b.CreatedAt)
 	}
@@ -53,6 +47,7 @@ func New(mainThreadCount, secondaryThreadCount int) *ThreadPool {
 
 	sp.mainWaiter = sync.NewCond(&sp.commonLock)
 	sp.secondaryWaiter = sync.NewCond(&sp.commonLock)
+	sp.gracefulWaiter = sync.NewCond(&sp.commonLock)
 
 	return &ThreadPool{
 		mainThreadCount:      mainThreadCount,
@@ -60,12 +55,13 @@ func New(mainThreadCount, secondaryThreadCount int) *ThreadPool {
 		mainTaskQueue:        priorityqueue.New(compareFunc),
 		secondaryTaskQueue:   priorityqueue.New(compareFunc),
 		sync:                 sp,
-		state:                state,
+		isInitialized:        false,
+		isTerminated:         false,
 	}
 }
 
 func (threadPool *ThreadPool) IsWorkingUnsafe() bool {
-	return threadPool.state.isInitialized && !threadPool.state.isTerminated && !threadPool.state.isPaused
+	return threadPool.isInitialized && !threadPool.isTerminated
 }
 
 func (threadPool *ThreadPool) IsWorking() bool {
@@ -78,39 +74,39 @@ func (threadPool *ThreadPool) MustRun() {
 	threadPool.sync.commonLock.Lock()
 	defer threadPool.sync.commonLock.Unlock()
 
-	if threadPool.state.isInitialized || threadPool.state.isTerminated {
+	if threadPool.isInitialized || threadPool.isTerminated {
 		log.Fatal("thread pool is already initialized or terminated")
 	}
 
 	for range threadPool.mainThreadCount {
 		threadPool.sync.wg.Add(1)
-		go threadPool.routine(true)
+		go threadPool.routineThread(true)
 	}
 
 	for range threadPool.secondaryThreadCount {
 		threadPool.sync.wg.Add(1)
-		go threadPool.routine(false)
+		go threadPool.routineThread(false)
 	}
 
-	threadPool.state.isInitialized = true
+	threadPool.isInitialized = true
 	fmt.Println("thread pool is running!")
 }
 
-func (threadPool *ThreadPool) Terminate() {
+func (threadPool *ThreadPool) MustTerminate() {
 	defer threadPool.sync.wg.Wait()
 
 	threadPool.sync.commonLock.Lock()
 	defer threadPool.sync.commonLock.Unlock()
 
-	if !threadPool.state.isInitialized || threadPool.state.isTerminated {
+	if !threadPool.isInitialized || threadPool.isTerminated {
 		return
 	}
 
 	threadPool.sync.mainWaiter.Broadcast()
 	threadPool.sync.secondaryWaiter.Broadcast()
 
-	threadPool.state.isInitialized = false
-	threadPool.state.isTerminated = true
+	threadPool.isInitialized = false
+	threadPool.isTerminated = true
 
 	fmt.Println("threadPool terminated")
 }
@@ -130,59 +126,67 @@ func (threadPool *ThreadPool) AddTask(task *Task) bool {
 	return true
 }
 
-func (threadPool *ThreadPool) routine(isMain bool) {
+func (threadPool *ThreadPool) gracefulShutDown() bool {
+	threadPool.sync.commonLock.RLock()
+	defer threadPool.sync.commonLock.RUnlock()
+	return !threadPool.IsWorkingUnsafe() && threadPool.mainTaskQueue.Empty() && threadPool.secondaryTaskQueue.Empty()
+}
+
+func (threadPool *ThreadPool) routineThread(isPrimary bool) {
 	defer threadPool.sync.wg.Done()
 
-	for !threadPool.state.isTerminated {
+	for threadPool.IsWorking() {
 		threadPool.removeOldTasks()
 
-		task, err := threadPool.getTaskFromQueue(isMain)
-		if err != nil {
-			return
+		task := threadPool.getTaskFromQueue(isPrimary)
+		if task == nil {
+			continue
 		}
 
-		now := time.Now()
-		if err = task.Run(); err != nil {
-			fmt.Printf("task [%v] failed with error: %v\n", task.Id, err.Error())
-		}
+		timeTaken, err := task.Run()
 
-		fmt.Printf("task [%v], finished in - %v\n", task.Id, time.Since(now))
+		{
+			threadPool.sync.printLock.Lock()
+			if err != nil {
+				fmt.Printf("task [%v] failed with error: %v\n", task.Id, err.Error())
+			}
+			fmt.Printf("task [%v], finished in %v\n", task.Id, timeTaken)
+			threadPool.sync.printLock.Unlock()
+		}
 	}
 }
 
-func (threadPool *ThreadPool) getQueueWithWaiter(isMain bool) (TaskPriorityQueue, *sync.Cond) {
+func (threadPool *ThreadPool) getQueueWithWaiter(isPrimary bool) (TaskPriorityQueue, *sync.Cond) {
 	threadPool.sync.commonLock.RLock()
 	defer threadPool.sync.commonLock.RUnlock()
 
-	if isMain {
+	if isPrimary {
 		return threadPool.mainTaskQueue, threadPool.sync.mainWaiter
 	}
 
 	return threadPool.secondaryTaskQueue, threadPool.sync.secondaryWaiter
 }
 
-func (threadPool *ThreadPool) getTaskFromQueue(isMain bool) (*Task, error) {
-	queue, waiter := threadPool.getQueueWithWaiter(isMain)
+func (threadPool *ThreadPool) getTaskFromQueue(isPrimary bool) *Task {
+	queue, waiter := threadPool.getQueueWithWaiter(isPrimary)
 
-	{
-		threadPool.sync.commonLock.Lock()
-		defer threadPool.sync.commonLock.Unlock()
+	threadPool.sync.commonLock.Lock()
+	defer threadPool.sync.commonLock.Unlock()
 
-		for queue.Empty() && !threadPool.state.isTerminated {
-			waiter.Wait()
+	for queue.Empty() && !threadPool.isTerminated {
+		waiter.Wait()
+	}
+
+	for {
+		task := queue.Pop()
+		if task == nil {
+			return nil
 		}
 
-		for {
-			task, err := queue.Pop()
-			if err != nil {
-				return nil, err
-			}
-
-			if task != nil && task.Status == IDLE {
-				_ = task.SetStatus(PROCESSING)
-				fmt.Printf("task [%v] was taken\n", task.Id)
-				return task, nil
-			}
+		if task != nil && task.Status == IDLE {
+			_ = task.SetStatus(PROCESSING)
+			fmt.Printf("task [%v] was taken\n", task.Id)
+			return task
 		}
 	}
 }

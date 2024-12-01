@@ -40,7 +40,7 @@ func (pq *PriorityQueue[T]) Push(element *T) {
 	pq.heap.Push(element)
 }
 
-func (pq *PriorityQueue[T]) Pop() (*T, error) {
+func (pq *PriorityQueue[T]) Pop() *T {
 	pq.Lock()
 	defer pq.Unlock()
 	return pq.heap.Pop()

@@ -24,11 +24,10 @@ func NewTask(id int64, runFunc RunFunc) *Task {
 	}
 }
 
-func (task *Task) Run() error {
+func (task *Task) Run() (time.Duration, error) {
+	now := time.Now()
 	err := task.RunFunc()
-	task.Status = FINISHED
-
-	return err
+	return time.Since(now), err
 }
 
 func (task *Task) SetRunFunc(runFunc RunFunc) {
