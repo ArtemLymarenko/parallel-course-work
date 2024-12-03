@@ -7,11 +7,11 @@ import (
 )
 
 func main() {
-	tp := threadpool.New(4, 1)
+	threadPool := threadpool.New(4, 1)
 	router := tcpRouter.New()
 	router.AddRoute("status", tcpRouter.POST, func(ctx *tcpRouter.RequestContext) error {
 		return ctx.ResponseJSON(tcpRouter.OK, nil)
 	})
-	server := tcpServer.New(8080, tp, router)
+	server := tcpServer.New(8080, threadPool, router)
 	server.Start()
 }

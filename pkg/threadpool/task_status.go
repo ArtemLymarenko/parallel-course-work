@@ -2,9 +2,7 @@ package threadpool
 
 import "errors"
 
-var (
-	ErrInvalidTaskStatus = errors.New("invalid task status")
-)
+var ErrInvalidTaskStatus = errors.New("invalid task status")
 
 type TaskStatus int
 

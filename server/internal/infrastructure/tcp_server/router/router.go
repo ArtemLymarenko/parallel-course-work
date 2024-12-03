@@ -3,6 +3,7 @@ package tcpRouter
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"log"
 )
 
@@ -30,6 +31,7 @@ func (router *Router) AddRoute(path RequestPath, method RequestMethod, handlerFu
 
 	rm := RequestMeta{path, method}
 	router.routes[rm] = handlerFunc
+	fmt.Println("New route added:", rm)
 }
 
 func (router *Router) GetHandler(meta RequestMeta) (HandlerFunc, error) {

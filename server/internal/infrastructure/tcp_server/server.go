@@ -20,7 +20,7 @@ import (
 type ThreadPool interface {
 	MustRun()
 	MustTerminate()
-	AddTask(task *threadpool.Task) bool
+	AddTask(task *threadpool.Task) error
 }
 
 type Router interface {
@@ -43,38 +43,38 @@ func New(port int, threadPool ThreadPool, router Router) *Server {
 	}
 }
 
-func (s *Server) getAddr() string {
-	return fmt.Sprintf(":%d", s.port)
+func (server *Server) getAddr() string {
+	return fmt.Sprintf(":%d", server.port)
 }
 
-func (s *Server) Start() {
-	conn, err := net.Listen("tcp", s.getAddr())
+func (server *Server) Start() {
+	conn, err := net.Listen("tcp", server.getAddr())
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	s.conn = conn
-	fmt.Println("Server started on port:", s.port)
+	server.conn = conn
+	fmt.Println("Server started on port:", server.port)
 
 	wg := sync.WaitGroup{}
-	go s.gracefulShutDown(&wg)
+	go server.gracefulShutDown(&wg)
 
-	s.threadPool.MustRun()
-	s.AcceptConnections()
+	server.threadPool.MustRun()
+	server.acceptConnections()
 
 	wg.Wait()
 }
 
-func (s *Server) AcceptConnections() {
+func (server *Server) acceptConnections() {
 	idx := atomic.Int64{}
 	idx.Store(0)
 	for {
-		conn, err := s.conn.Accept()
+		conn, err := server.conn.Accept()
 		if err != nil {
 			log.Fatal(err)
 		}
 
-		err = s.HandleConnection(conn, idx.Add(1))
+		err = server.handleConnection(conn, idx.Add(1))
 		if err != nil {
 			fmt.Println(err)
 			continue
@@ -82,13 +82,13 @@ func (s *Server) AcceptConnections() {
 	}
 }
 
-func (s *Server) HandleConnection(conn net.Conn, connIdx int64) error {
-	rawRequest, err := s.ReadMessage(conn)
+func (server *Server) handleConnection(conn net.Conn, connIdx int64) error {
+	rawRequest, err := server.readMessage(conn)
 	if err != nil {
 		return err
 	}
 
-	request, err := s.router.ParseRequest(rawRequest)
+	request, err := server.router.ParseRequest(rawRequest)
 	if err != nil {
 		return err
 	}
@@ -96,24 +96,19 @@ func (s *Server) HandleConnection(conn net.Conn, connIdx int64) error {
 	request.BindConn(conn)
 
 	task := threadpool.NewTask(connIdx, func() error {
-		return s.router.Handle(request)
+		return server.router.Handle(request)
 	})
 
-	ok := s.threadPool.AddTask(task)
-	if !ok {
-		return fmt.Errorf("task with idx %d was not added", connIdx)
-	}
-
-	return nil
+	return server.threadPool.AddTask(task)
 }
 
-func (s *Server) ReadMessage(conn net.Conn) ([]byte, error) {
-	defer conn.Close()
+func (server *Server) readMessage(clientConn net.Conn) ([]byte, error) {
+	defer clientConn.Close()
 
 	var buffer bytes.Buffer
 	for {
 		chunk := make([]byte, 2048)
-		n, err := conn.Read(chunk)
+		n, err := clientConn.Read(chunk)
 		if err != nil {
 			if err == io.EOF {
 				break
@@ -127,7 +122,7 @@ func (s *Server) ReadMessage(conn net.Conn) ([]byte, error) {
 	return buffer.Bytes(), nil
 }
 
-func (s *Server) gracefulShutDown(wg *sync.WaitGroup) {
+func (server *Server) gracefulShutDown(wg *sync.WaitGroup) {
 	wg.Add(1)
 	sigint := make(chan os.Signal, 1)
 	signal.Notify(sigint, os.Interrupt, syscall.SIGTERM)
@@ -136,11 +131,11 @@ func (s *Server) gracefulShutDown(wg *sync.WaitGroup) {
 	_, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	if err := s.conn.Close(); err != nil {
+	if err := server.conn.Close(); err != nil {
 		log.Fatal(err)
 	}
 
-	s.threadPool.MustTerminate()
+	server.threadPool.MustTerminate()
 
 	fmt.Println("Server stopped")
 	wg.Done()

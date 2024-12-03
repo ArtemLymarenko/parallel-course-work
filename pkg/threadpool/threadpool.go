@@ -111,9 +111,9 @@ func (threadPool *ThreadPool) MustTerminate() {
 	fmt.Println("threadPool terminated")
 }
 
-func (threadPool *ThreadPool) AddTask(task *Task) bool {
+func (threadPool *ThreadPool) AddTask(task *Task) error {
 	if !threadPool.IsWorking() {
-		return false
+		return fmt.Errorf("task was not added %v", task.Id)
 	}
 
 	threadPool.sync.commonLock.Lock()
@@ -123,13 +123,7 @@ func (threadPool *ThreadPool) AddTask(task *Task) bool {
 	threadPool.sync.mainWaiter.Signal()
 
 	fmt.Printf("added new task - %v\n", task.Id)
-	return true
-}
-
-func (threadPool *ThreadPool) gracefulShutDown() bool {
-	threadPool.sync.commonLock.RLock()
-	defer threadPool.sync.commonLock.RUnlock()
-	return !threadPool.IsWorkingUnsafe() && threadPool.mainTaskQueue.Empty() && threadPool.secondaryTaskQueue.Empty()
+	return nil
 }
 
 func (threadPool *ThreadPool) routineThread(isPrimary bool) {
