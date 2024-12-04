@@ -2,7 +2,7 @@ const net = require('net');
 
 const requestContext = {
     meta: {
-        path: 'status',
+        path: 'status1',
         method: 'POST',
     },
     body: 'Sample data',
@@ -14,29 +14,29 @@ const PORT = 8080;
 const client = new net.Socket();
 
 client.connect(PORT, HOST, () => {
-    console.log('Підключення встановлено');
+    console.log('Connection established');
 
     const jsonData = JSON.stringify(requestContext);
     const lengthBuffer = Buffer.alloc(4);
     lengthBuffer.writeUInt32BE(Buffer.byteLength(jsonData), 0);
 
-    console.log('Відправлення даних:', lengthBuffer);
+    console.log('Sending:', lengthBuffer);
     client.write(lengthBuffer);
 
-    console.log('Відправлення даних:', jsonData);
+    console.log('Sending:', jsonData);
     client.write(jsonData);
 });
 
 client.on('data', (data) => {
-    console.log('Отримано відповідь від сервера:', data.toString());
+    console.log('Received answer from server:', data.toString());
 
     client.destroy();
 });
 
 client.on('close', () => {
-    console.log("З'єднання закрито");
+    console.log("Connection closed");
 });
 
 client.on('error', (err) => {
-    console.error('Помилка:', err.message);
+    console.error('Error occurred:', err.message);
 });

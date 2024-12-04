@@ -10,6 +10,7 @@ const (
 	OK ResponseStatus = iota
 	NotFound
 	Processing
+	InternalServerError
 )
 
 func (requestStatus ResponseStatus) Validate() error {

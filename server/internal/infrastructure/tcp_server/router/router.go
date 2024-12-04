@@ -36,6 +36,7 @@ func (router *Router) AddRoute(method RequestMethod, path RequestPath, handlerFu
 
 func (router *Router) GetHandler(meta RequestMeta) (HandlerFunc, error) {
 	handler, ok := router.routes[meta]
+	fmt.Println("GetHandler", ok, handler)
 	if !ok {
 		return nil, ErrRouteNotFound
 	}

@@ -77,10 +77,10 @@ func (server *Server) acceptConnections() {
 		}
 		defer conn.Close()
 
-		fmt.Println("New connection accepted")
 		err = server.handleConnection(conn, idx.Add(1))
 		if err != nil {
-			fmt.Println(err)
+			fmt.Println("Error occurred:", err)
+			conn.Close()
 			continue
 		}
 	}
@@ -91,18 +91,22 @@ func (server *Server) handleConnection(clientConn net.Conn, connIdx int64) error
 	if err != nil {
 		return err
 	}
-	fmt.Println("Received message:", rawRequest)
 
 	request, err := server.router.ParseRequest(rawRequest)
 	if err != nil {
-		fmt.Println("Error occurred:", err)
 		return err
 	}
-	fmt.Println("Parsed:", request)
+
 	requestCtx := tcpRouter.NewRequestContext(request, clientConn)
 
 	task := threadpool.NewTask(connIdx, func() error {
-		return server.router.Handle(requestCtx)
+		err := server.router.Handle(requestCtx)
+		if err != nil {
+			_ = requestCtx.ResponseJSON(tcpRouter.InternalServerError, err.Error())
+			return err
+		}
+
+		return nil
 	})
 
 	return server.threadPool.AddTask(task)
