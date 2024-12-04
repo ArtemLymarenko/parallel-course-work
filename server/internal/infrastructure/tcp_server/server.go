@@ -25,11 +25,12 @@ type ThreadPool interface {
 
 type Router interface {
 	Handle(request *tcpRouter.RequestContext) error
-	ParseRequest(raw []byte) (*tcpRouter.Request, error)
+	ParseRawRequest(raw []byte) (*tcpRouter.Request, error)
 }
 
 type Server struct {
 	port       int
+	errorCount int
 	conn       net.Listener
 	threadPool ThreadPool
 	router     Router
@@ -47,10 +48,10 @@ func (server *Server) getAddr() string {
 	return fmt.Sprintf(":%d", server.port)
 }
 
-func (server *Server) Start() {
+func (server *Server) Start() error {
 	conn, err := net.Listen("tcp", server.getAddr())
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 	defer conn.Close()
 
@@ -65,22 +66,26 @@ func (server *Server) Start() {
 	server.acceptConnections()
 
 	wg.Wait()
+	return nil
 }
 
 func (server *Server) acceptConnections() {
 	idx := atomic.Int64{}
 	idx.Store(0)
+
 	for {
 		conn, err := server.conn.Accept()
 		if err != nil {
-			log.Fatal(err)
+			server.errorCount++
+			if server.errorCount > 20 {
+				log.Fatal("Too many errors occurred:", err)
+			}
+			continue
 		}
-		defer conn.Close()
 
 		err = server.handleConnection(conn, idx.Add(1))
 		if err != nil {
 			fmt.Println("Error occurred:", err)
-			conn.Close()
 			continue
 		}
 	}
@@ -92,7 +97,7 @@ func (server *Server) handleConnection(clientConn net.Conn, connIdx int64) error
 		return err
 	}
 
-	request, err := server.router.ParseRequest(rawRequest)
+	request, err := server.router.ParseRawRequest(rawRequest)
 	if err != nil {
 		return err
 	}
@@ -100,8 +105,8 @@ func (server *Server) handleConnection(clientConn net.Conn, connIdx int64) error
 	requestCtx := tcpRouter.NewRequestContext(request, clientConn)
 
 	task := threadpool.NewTask(connIdx, func() error {
-		err := server.router.Handle(requestCtx)
-		if err != nil {
+		defer clientConn.Close()
+		if err := server.router.Handle(requestCtx); err != nil {
 			_ = requestCtx.ResponseJSON(tcpRouter.InternalServerError, err.Error())
 			return err
 		}

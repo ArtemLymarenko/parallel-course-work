@@ -10,14 +10,14 @@ type RequestMeta struct {
 	Method RequestMethod `json:"method"`
 }
 
-type Response struct {
-	Status ResponseStatus `json:"status"`
-	Body   any            `json:"body"`
-}
-
 type Request struct {
 	RequestMeta RequestMeta `json:"meta"`
 	Body        any         `json:"body"`
+}
+
+type Response struct {
+	Status ResponseStatus `json:"status"`
+	Body   any            `json:"body"`
 }
 
 type RequestContext struct {

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"log"
 	"parallel-course-work/pkg/threadpool"
 	tcpServer "parallel-course-work/server/internal/infrastructure/tcp_server"
 	tcpRouter "parallel-course-work/server/internal/infrastructure/tcp_server/router"
@@ -13,5 +14,8 @@ func main() {
 		return ctx.ResponseJSON(tcpRouter.OK, "hello world!")
 	})
 	server := tcpServer.New(8080, threadPool, router)
-	server.Start()
+	err := server.Start()
+	if err != nil {
+		log.Fatal(err)
+	}
 }

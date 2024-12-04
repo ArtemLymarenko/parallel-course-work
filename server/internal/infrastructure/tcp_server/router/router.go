@@ -36,7 +36,6 @@ func (router *Router) AddRoute(method RequestMethod, path RequestPath, handlerFu
 
 func (router *Router) GetHandler(meta RequestMeta) (HandlerFunc, error) {
 	handler, ok := router.routes[meta]
-	fmt.Println("GetHandler", ok, handler)
 	if !ok {
 		return nil, ErrRouteNotFound
 	}
@@ -53,7 +52,7 @@ func (router *Router) Handle(ctx *RequestContext) error {
 	return handler(ctx)
 }
 
-func (router *Router) ParseRequest(raw []byte) (*Request, error) {
+func (router *Router) ParseRawRequest(raw []byte) (*Request, error) {
 	request := &Request{}
 	err := json.Unmarshal(raw, request)
 	if err != nil {
