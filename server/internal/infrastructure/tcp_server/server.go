@@ -25,7 +25,7 @@ type ThreadPool interface {
 
 type Router interface {
 	Handle(request *tcpRouter.RequestContext) error
-	ParseRequest(raw []byte) (*tcpRouter.RequestContext, error)
+	ParseRequest(raw []byte) (*tcpRouter.Request, error)
 }
 
 type Server struct {
@@ -52,11 +52,13 @@ func (server *Server) Start() {
 	if err != nil {
 		log.Fatal(err)
 	}
+	defer conn.Close()
 
 	server.conn = conn
 	fmt.Println("Server started on port:", server.port)
 
 	wg := sync.WaitGroup{}
+	wg.Add(1)
 	go server.gracefulShutDown(&wg)
 
 	server.threadPool.MustRun()
@@ -73,7 +75,9 @@ func (server *Server) acceptConnections() {
 		if err != nil {
 			log.Fatal(err)
 		}
+		defer conn.Close()
 
+		fmt.Println("New connection accepted")
 		err = server.handleConnection(conn, idx.Add(1))
 		if err != nil {
 			fmt.Println(err)
@@ -82,30 +86,41 @@ func (server *Server) acceptConnections() {
 	}
 }
 
-func (server *Server) handleConnection(conn net.Conn, connIdx int64) error {
-	rawRequest, err := server.readMessage(conn)
+func (server *Server) handleConnection(clientConn net.Conn, connIdx int64) error {
+	rawRequest, err := server.readMessage(clientConn)
 	if err != nil {
 		return err
 	}
+	fmt.Println("Received message:", rawRequest)
 
 	request, err := server.router.ParseRequest(rawRequest)
 	if err != nil {
+		fmt.Println("Error occurred:", err)
 		return err
 	}
-
-	request.BindConn(conn)
+	fmt.Println("Parsed:", request)
+	requestCtx := tcpRouter.NewRequestContext(request, clientConn)
 
 	task := threadpool.NewTask(connIdx, func() error {
-		return server.router.Handle(request)
+		return server.router.Handle(requestCtx)
 	})
 
 	return server.threadPool.AddTask(task)
 }
 
 func (server *Server) readMessage(clientConn net.Conn) ([]byte, error) {
-	defer clientConn.Close()
+	lengthBuffer := make([]byte, 4)
+	_, err := clientConn.Read(lengthBuffer)
+	if err != nil {
+		return nil, fmt.Errorf("error reading message length: %v", err)
+	}
+	messageLength := int(lengthBuffer[0])<<24 | int(lengthBuffer[1])<<16 | int(lengthBuffer[2])<<8 | int(lengthBuffer[3])
 
-	var buffer bytes.Buffer
+	var (
+		buffer      bytes.Buffer
+		totalLength int
+	)
+
 	for {
 		chunk := make([]byte, 2048)
 		n, err := clientConn.Read(chunk)
@@ -113,17 +128,20 @@ func (server *Server) readMessage(clientConn net.Conn) ([]byte, error) {
 			if err == io.EOF {
 				break
 			}
-
 			return nil, fmt.Errorf("error reading: %v", err)
 		}
+
 		buffer.Write(chunk[:n])
+		totalLength += n
+		if totalLength == messageLength {
+			break
+		}
 	}
 
 	return buffer.Bytes(), nil
 }
 
 func (server *Server) gracefulShutDown(wg *sync.WaitGroup) {
-	wg.Add(1)
 	sigint := make(chan os.Signal, 1)
 	signal.Notify(sigint, os.Interrupt, syscall.SIGTERM)
 	<-sigint

@@ -9,7 +9,7 @@ import (
 
 var ErrRouteNotFound = errors.New("route not found")
 
-type HandlerFunc func(request *RequestContext) error
+type HandlerFunc func(ctx *RequestContext) error
 
 type Router struct {
 	routes map[RequestMeta]HandlerFunc
@@ -20,7 +20,7 @@ func New() *Router {
 	return &Router{routes}
 }
 
-func (router *Router) AddRoute(path RequestPath, method RequestMethod, handlerFunc HandlerFunc) {
+func (router *Router) AddRoute(method RequestMethod, path RequestPath, handlerFunc HandlerFunc) {
 	if err := path.Validate(); err != nil {
 		log.Fatal(err)
 	}
@@ -31,7 +31,7 @@ func (router *Router) AddRoute(path RequestPath, method RequestMethod, handlerFu
 
 	rm := RequestMeta{path, method}
 	router.routes[rm] = handlerFunc
-	fmt.Println("New route added:", rm)
+	fmt.Printf("Registered route - Method: %v, Path: %v\n", rm.Method, rm.Path)
 }
 
 func (router *Router) GetHandler(meta RequestMeta) (HandlerFunc, error) {
@@ -43,17 +43,18 @@ func (router *Router) GetHandler(meta RequestMeta) (HandlerFunc, error) {
 	return handler, nil
 }
 
-func (router *Router) Handle(request *RequestContext) error {
-	handler, err := router.GetHandler(request.RequestMeta)
+func (router *Router) Handle(ctx *RequestContext) error {
+	handler, err := router.GetHandler(ctx.Request.RequestMeta)
 	if err != nil {
 		return err
 	}
 
-	return handler(request)
+	return handler(ctx)
 }
 
-func (router *Router) ParseRequest(raw []byte) (request *RequestContext, err error) {
-	err = json.Unmarshal(raw, request)
+func (router *Router) ParseRequest(raw []byte) (*Request, error) {
+	request := &Request{}
+	err := json.Unmarshal(raw, request)
 	if err != nil {
 		return nil, err
 	}

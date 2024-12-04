@@ -140,11 +140,17 @@ func (threadPool *ThreadPool) routineThread(isPrimary bool) {
 		timeTaken, err := task.Run()
 
 		{
+			threadPool.sync.commonLock.Lock()
+			_ = task.SetStatus(FINISHED)
+			threadPool.sync.commonLock.Unlock()
+		}
+
+		{
 			threadPool.sync.printLock.Lock()
 			if err != nil {
 				fmt.Printf("task [%v] failed with error: %v\n", task.Id, err.Error())
 			}
-			fmt.Printf("task [%v], finished in %v\n", task.Id, timeTaken)
+			fmt.Printf("task [%v], finished in %v, by primary threads: %v\n", task.Id, timeTaken, isPrimary)
 			threadPool.sync.printLock.Unlock()
 		}
 	}

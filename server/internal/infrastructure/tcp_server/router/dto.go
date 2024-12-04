@@ -15,14 +15,21 @@ type Response struct {
 	Body   any            `json:"body"`
 }
 
-type RequestContext struct {
-	conn        net.Conn
+type Request struct {
 	RequestMeta RequestMeta `json:"meta"`
 	Body        any         `json:"body"`
 }
 
-func (request *RequestContext) BindConn(conn net.Conn) {
-	request.conn = conn
+type RequestContext struct {
+	Conn    net.Conn
+	Request *Request
+}
+
+func NewRequestContext(request *Request, conn net.Conn) *RequestContext {
+	return &RequestContext{
+		conn,
+		request,
+	}
 }
 
 func (request *RequestContext) ResponseJSON(status ResponseStatus, data any) error {
@@ -36,7 +43,7 @@ func (request *RequestContext) ResponseJSON(status ResponseStatus, data any) err
 		return err
 	}
 
-	_, err = request.conn.Write(jsonResponse)
+	_, err = request.Conn.Write(jsonResponse)
 	if err != nil {
 		return err
 	}
