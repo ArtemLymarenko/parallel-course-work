@@ -17,20 +17,20 @@ func main() {
 	//	log.Fatal(err)
 	//}
 
-	smap := syncMap.NewSyncHashMap(10, 0.75, 10)
-	err := smap.Insert("key", []string{"value"})
+	smap := syncMap.NewSyncHashMap[[]string](10, 0.75, 10)
+	err := smap.Insert("123", []string{"value"})
 	if err != nil {
 		panic(err)
 	}
 
-	res, err := smap.Get("key")
-	if err != nil {
+	res, ok := smap.Get("123")
+	if !ok {
 		panic(err)
 	}
 
 	res.Value = append(res.Value, "value2")
-	res2, err := smap.Get("key")
-	if err != nil {
+	res2, ok := smap.Get("123")
+	if !ok {
 		panic(err)
 	}
 	fmt.Println(res2)

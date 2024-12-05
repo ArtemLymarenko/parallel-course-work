@@ -18,7 +18,6 @@ type TaskPriorityQueue interface {
 type SyncPrimitives struct {
 	mainWaiter      *sync.Cond
 	secondaryWaiter *sync.Cond
-	gracefulWaiter  *sync.Cond
 	commonLock      sync.RWMutex
 	printLock       sync.RWMutex
 	wg              sync.WaitGroup
@@ -47,7 +46,6 @@ func New(mainThreadCount, secondaryThreadCount int) *ThreadPool {
 
 	sp.mainWaiter = sync.NewCond(&sp.commonLock)
 	sp.secondaryWaiter = sync.NewCond(&sp.commonLock)
-	sp.gracefulWaiter = sync.NewCond(&sp.commonLock)
 
 	return &ThreadPool{
 		mainThreadCount:      mainThreadCount,
@@ -130,6 +128,7 @@ func (threadPool *ThreadPool) routineThread(isPrimary bool) {
 	defer threadPool.sync.wg.Done()
 
 	for threadPool.IsWorking() {
+		//Add cron job to observe main queue and move old tasks to secondary in separate thread.
 		threadPool.removeOldTasks()
 
 		task := threadPool.getTaskFromQueue(isPrimary)
