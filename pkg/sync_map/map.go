@@ -1,73 +1,76 @@
 package syncMap
 
 import (
-	"hash/fnv"
+	"parallel-course-work/pkg/hash"
 	linkedList "parallel-course-work/pkg/linked_list"
-	"strings"
+	"sync"
 )
 
-type node[V any] struct {
-	key   string
-	value *V
+const (
+	BucketFieldKey = "Key"
+)
+
+type Bucket struct {
+	Key   string
+	Value []string
 }
 
-type bucket[V any] []linkedList.ILinkedList[node[V]]
+type linkedListArray []linkedList.ILinkedList[Bucket]
 
-type syncHashMap[V any] struct {
-	innerArray    bucket[V]
+type syncHashMap struct {
+	innerArray    linkedListArray
+	locks         []sync.RWMutex
 	maxLoadFactor float64
 	size          int
+	lockSize      int
 }
 
-func NewSyncHashMap[V any](size int, loadFactor float64) *syncHashMap[V] {
-	return &syncHashMap[V]{
-		innerArray:    make(bucket[V], size),
+func NewSyncHashMap(size int, loadFactor float64, lockSize int) *syncHashMap {
+	syncMap := &syncHashMap{
+		innerArray:    make(linkedListArray, size),
 		maxLoadFactor: loadFactor,
 	}
+
+	for i := 0; i < lockSize; i++ {
+		syncMap.locks = append(syncMap.locks, sync.RWMutex{})
+	}
+
+	return syncMap
 }
 
-func (h *syncHashMap[V]) SetMaxLoadFactor(maxLoadFactor float64) {
+func (h *syncHashMap) SetMaxLoadFactor(maxLoadFactor float64) {
 	h.maxLoadFactor = maxLoadFactor
 }
 
-func (h *syncHashMap[V]) hash(key string) (uint64, error) {
-	if len(strings.Trim(key, " ")) == 0 {
-		return 0, ErrCalculatingHash
-	}
-
-	totalHash := fnv.New64a()
-	_, err := totalHash.Write([]byte(key))
-	if err != nil {
-		return 0, ErrCalculatingHash
-	}
-
-	return totalHash.Sum64(), nil
-}
-
-func (h *syncHashMap[V]) GetInnerArray() bucket[V] {
-	return h.innerArray
-}
-
-func (h *syncHashMap[V]) GetLoadFactor() float64 {
+func (h *syncHashMap) GetLoadFactor() float64 {
 	return float64(h.size) / float64(len(h.innerArray))
 }
 
-func (h *syncHashMap[V]) GetSize() int {
+func (h *syncHashMap) GetSize() int {
 	return h.size
 }
 
-func (h *syncHashMap[V]) resizeMap() error {
-	innerArrayCopy := make(bucket[V], len(h.innerArray))
+func (h *syncHashMap) getBucketIndexFromKey(key string) (uint64, error) {
+	hashCode, err := hash.Calculate(key)
+	if err != nil {
+		return 0, err
+	}
+
+	return hashCode % uint64(len(h.innerArray)), nil
+}
+
+func (h *syncHashMap) resizeMap() error {
+	innerArrayCopy := make(linkedListArray, len(h.innerArray))
 	copy(innerArrayCopy, h.innerArray)
 
 	newSize := int((h.maxLoadFactor * 2) * float64(len(h.innerArray)))
-	h.innerArray = make(bucket[V], newSize)
+	h.innerArray = make(linkedListArray, newSize)
 	h.size = 0
 
 	for _, list := range innerArrayCopy {
 		for list != nil && list.GetSize() != 0 {
-			element := list.RemoveByIndex(0)
-			err := h.Insert(element.key, element.value)
+			element := list.RemoveFront()
+			err := h.Insert(element.Key, element.Value)
 			if err != nil {
 				return err
 			}
@@ -77,76 +80,67 @@ func (h *syncHashMap[V]) resizeMap() error {
 	return nil
 }
 
-func (h *syncHashMap[V]) Insert(key string, value *V) error {
-	hashCode, err := h.hash(key)
-	if err != nil {
-		return err
-	}
-
-	index := hashCode % uint64(len(h.innerArray))
-	if h.innerArray[index] == nil {
-		h.innerArray[index] = linkedList.New[node[V]]()
-	}
-
-	newNode := node[V]{key, nil}
-	_, err = h.innerArray[index].Find(newNode, func(a, b node[V]) bool {
-		return a.key == b.key
-	})
-	if err != nil {
-		h.innerArray[index].AddFront(node[V]{key, value})
-		h.size++
-	}
-
+func (h *syncHashMap) checkLoadFactorAndResize() error {
 	if h.GetLoadFactor() > h.maxLoadFactor {
-		err = h.resizeMap()
-
-		if err != nil {
-			return err
-		}
+		return h.resizeMap()
 	}
 
 	return nil
 }
 
-func (h *syncHashMap[V]) Get(key string) (*V, error) {
-	hashCode, hashErr := h.hash(key)
-	if hashErr != nil {
-		return nil, hashErr
+func (h *syncHashMap) Insert(key string, value []string) error {
+	index, err := h.getBucketIndexFromKey(key)
+	if err != nil {
+		return err
 	}
 
-	index := hashCode % uint64(len(h.innerArray))
 	if h.innerArray[index] == nil {
-		return nil, ErrElementNotFound
+		h.innerArray[index] = linkedList.New[Bucket]()
 	}
 
-	newNode := node[V]{key, nil}
-	element, err := h.innerArray[index].Find(newNode, func(a, b node[V]) bool {
-		return a.key == b.key
-	})
+	list := h.innerArray[index]
+	element, found := list.FindByStructField(BucketFieldKey, key)
+	if found {
+		element.Value = value
+		return nil
+	}
 
+	list.AddFront(&Bucket{key, value})
+	h.size++
+
+	err = h.checkLoadFactorAndResize()
+	return err
+}
+
+func (h *syncHashMap) Get(key string) (*Bucket, error) {
+	index, err := h.getBucketIndexFromKey(key)
 	if err != nil {
 		return nil, err
 	}
 
-	return element.value, nil
-}
-
-func (h *syncHashMap[V]) Remove(key string) error {
-	hashCode, hashErr := h.hash(key)
-	if hashErr != nil {
-		return hashErr
+	if h.innerArray[index] == nil {
+		return nil, ErrElementNotFound
 	}
 
-	index := hashCode % uint64(len(h.innerArray))
+	element, found := h.innerArray[index].FindByStructField(BucketFieldKey, key)
+	if !found {
+		return nil, ErrElementNotFound
+	}
+
+	return element, nil
+}
+
+func (h *syncHashMap) Remove(key string) error {
+	index, err := h.getBucketIndexFromKey(key)
+	if err != nil {
+		return err
+	}
+
 	if h.innerArray[index] == nil {
 		return nil
 	}
 
-	newNode := node[V]{key, nil}
-	err := h.innerArray[index].Remove(newNode, func(a, b node[V]) bool {
-		return a.key == b.key
-	})
-
+	err = h.innerArray[index].RemoveByStructField(BucketFieldKey, key)
 	if err != nil {
 		return err
 	}

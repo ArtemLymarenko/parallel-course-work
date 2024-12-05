@@ -2,24 +2,22 @@ package linkedList
 
 import (
 	"fmt"
+	"reflect"
 )
 
-type EqualFunc[T any] func(a T, b T) bool
-
 type ILinkedList[T any] interface {
-	AddFront(item T)
-	AddBack(item T)
-	Remove(item T, isEqual EqualFunc[T]) error
-	RemoveByIndex(index int) T
-	Find(element T, isEqual EqualFunc[T]) (T, error)
-	FindByIndex(index int) (T, error)
+	AddFront(item *T)
+	AddBack(item *T)
+	FindByStructField(fieldName string, fieldValue any) (*T, bool)
+	RemoveByStructField(fieldName string, fieldValue any) error
+	RemoveFront() *T
 	GetSize() int
 	PrintList()
 	Clear()
 }
 
 type node[T any] struct {
-	element  T
+	element  *T
 	nextNode *node[T]
 }
 
@@ -41,7 +39,7 @@ func (list *linkedList[T]) GetSize() int {
 	return list.length
 }
 
-func (list *linkedList[T]) AddFront(item T) {
+func (list *linkedList[T]) AddFront(item *T) {
 	newNode := &node[T]{element: item, nextNode: nil}
 	if list.head == nil {
 		list.head = newNode
@@ -55,7 +53,7 @@ func (list *linkedList[T]) AddFront(item T) {
 	list.length++
 }
 
-func (list *linkedList[T]) AddBack(item T) {
+func (list *linkedList[T]) AddBack(item *T) {
 	newNode := &node[T]{element: item, nextNode: nil}
 	if list.head == nil {
 		list.head = newNode
@@ -69,45 +67,37 @@ func (list *linkedList[T]) AddBack(item T) {
 	list.length++
 }
 
-func (list *linkedList[T]) Find(element T, isEqual EqualFunc[T]) (T, error) {
+// FindByStructField finds element in linked list by fieldName only if this field is accessible.
+func (list *linkedList[T]) FindByStructField(fieldName string, fieldValue interface{}) (*T, bool) {
 	current := list.head
 
+	var field reflect.Value
 	for current != nil {
-		if isEqual(element, current.element) {
-			return current.element, nil
+		field = reflect.ValueOf(*current.element).FieldByName(fieldName)
+		if !field.IsValid() || !field.CanInterface() {
+			return nil, false
+		}
+
+		if reflect.DeepEqual(field.Interface(), fieldValue) {
+			return current.element, true
 		}
 		current = current.nextNode
 	}
 
-	var defaultValue T
-	return defaultValue, ErrElementNotFound
+	return nil, false
 }
 
-func (list *linkedList[T]) FindByIndex(index int) (T, error) {
-	var defaultValue T
-	if index > list.length || index < 0 {
-		return defaultValue, ErrIndexOutOfRange
-	}
-
-	current := list.head
-	var iterator = 0
-	for current != nil {
-		if index == iterator {
-			return current.element, nil
-		}
-		current = current.nextNode
-		iterator++
-	}
-
-	return defaultValue, ErrElementNotFound
-}
-
-func (list *linkedList[T]) Remove(element T, isEqual EqualFunc[T]) error {
+// RemoveByStructField removes element in linked list by fieldName only if this field is accessible.
+func (list *linkedList[T]) RemoveByStructField(fieldName string, fieldValue any) error {
 	if list.length == 0 {
 		return ErrorElementNotRemoved
 	}
+	field := reflect.ValueOf(*list.head.element).FieldByName(fieldName)
+	if !field.IsValid() || !field.CanInterface() {
+		return ErrorElementNotRemoved
+	}
 
-	if isEqual(element, list.head.element) {
+	if reflect.DeepEqual(field.Interface(), fieldValue) {
 		list.head = list.head.nextNode
 		list.length--
 		if list.head == nil {
@@ -119,7 +109,12 @@ func (list *linkedList[T]) Remove(element T, isEqual EqualFunc[T]) error {
 	var prev *node[T]
 	current := list.head
 	for current != nil {
-		if isEqual(current.element, element) {
+		field = reflect.ValueOf(*current.element).FieldByName(fieldName)
+		if !field.IsValid() || !field.CanInterface() {
+			return ErrorElementNotRemoved
+		}
+
+		if reflect.DeepEqual(field.Interface(), fieldValue) {
 			prev.nextNode = current.nextNode
 			list.length--
 
@@ -136,37 +131,13 @@ func (list *linkedList[T]) Remove(element T, isEqual EqualFunc[T]) error {
 	return ErrorElementNotRemoved
 }
 
-func (list *linkedList[T]) RemoveByIndex(index int) T {
-	var element T
-	if index == 0 {
-		element = list.head.element
-		list.head = list.head.nextNode
-		list.length--
+func (list *linkedList[T]) RemoveFront() *T {
+	element := list.head.element
+	list.head = list.head.nextNode
+	list.length--
 
-		if list.head == nil {
-			list.tail = nil
-		}
-
-		return element
-	}
-
-	var iterator int
-	var prev *node[T]
-	current := list.head
-	for current != nil {
-		if index == iterator {
-			prev.nextNode = current.nextNode
-			list.length--
-
-			if current.nextNode == nil {
-				list.tail = prev
-			}
-			return current.element
-		}
-
-		prev = current
-		current = current.nextNode
-		iterator++
+	if list.head == nil {
+		list.tail = nil
 	}
 
 	return element

@@ -6,67 +6,59 @@ import (
 )
 
 type ScholarShip struct {
-	cardNumber  int64
-	amount      int
-	isAvailable bool
+	CardNumber  int64
+	Amount      int
+	IsAvailable bool
 }
 
 func Test(t *testing.T) {
 	list := New[ScholarShip]()
 	const (
-		maxPushFront   = 50_000
-		maxPushBack    = 10_000
-		maxRead        = 20_000
-		maxRemoveFront = 5_000
-		maxRemoveBack  = 5_000
+		maxPushFront      = 50_000
+		maxPushBack       = 10_000
+		maxRemoveFront    = 20_000
+		maxReadCardNumber = 5_000
+		maxRemoveByName   = 5_000
 	)
-	var i = 0
-	for i < maxPushFront {
+	for range maxPushFront {
 		amount := rand.Intn(2000) + 1000
 		cardNumber := rand.Int63()
-		list.AddFront(ScholarShip{cardNumber: cardNumber, amount: amount, isAvailable: true})
-		i++
+		list.AddFront(&ScholarShip{CardNumber: cardNumber, Amount: amount, IsAvailable: true})
 	}
 	if list.GetSize() != maxPushFront {
 		t.Errorf("Expected %d, got %d", maxPushFront, list.GetSize())
 	}
 
-	i = 0
-	for i < maxPushBack {
+	for range maxPushBack {
 		amount := rand.Intn(2000) + 1000
 		cardNumber := rand.Int63()
-		list.AddBack(ScholarShip{cardNumber: cardNumber, amount: amount, isAvailable: true})
-		i++
+		list.AddBack(&ScholarShip{CardNumber: cardNumber, Amount: amount, IsAvailable: true})
 	}
 	if list.GetSize() != maxPushFront+maxPushBack {
 		t.Errorf("Expected %d, got %d", maxPushFront+maxPushBack, list.GetSize())
 	}
 
-	i = 0
-	for i < maxRead {
-		index := rand.Intn(list.GetSize())
-		_, err := list.FindByIndex(index)
-		if err != nil {
-			t.Log(err)
-		}
-		i++
-	}
-	if list.GetSize() != maxPushFront+maxPushBack {
-		t.Errorf("Expected %d, got %d", maxPushFront+maxPushBack, list.GetSize())
-	}
-
-	i = 0
-	for i < maxRemoveFront {
-		list.RemoveByIndex(0)
-		i++
+	for range maxRemoveFront {
+		list.RemoveFront()
 	}
 	if list.GetSize() != maxPushFront+maxPushBack-maxRemoveFront {
 		t.Errorf("Expected %d, got %d", maxPushFront+maxPushBack-maxRemoveFront, list.GetSize())
 	}
 
-	i = 0
-	for i < maxRemoveBack {
-		list.RemoveByIndex(list.GetSize() - 1)
-		i++
+	for range maxReadCardNumber {
+		_, ok := list.FindByStructField("IsAvailable", true)
+		if !ok {
+			t.Errorf("Expected to read data, got %v", ok)
+		}
+	}
+
+	for range maxRemoveByName {
+		err := list.RemoveByStructField("IsAvailable", true)
+		if err != nil {
+			t.Errorf("Expected to read data, got %v", err)
+		}
+	}
+	if list.GetSize() != maxPushFront+maxPushBack-maxRemoveFront-maxRemoveByName {
+		t.Errorf("Expected %d, got %d", maxPushFront+maxPushBack-maxRemoveFront-maxRemoveByName, list.GetSize())
 	}
 }
