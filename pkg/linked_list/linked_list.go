@@ -21,25 +21,34 @@ type node[T any] struct {
 	nextNode *node[T]
 }
 
-type linkedList[T any] struct {
+type LinkedList[T any] struct {
 	head   *node[T]
 	tail   *node[T]
 	length int
 }
 
-func New[T any]() *linkedList[T] {
-	return &linkedList[T]{
+func New[T any]() *LinkedList[T] {
+	return &LinkedList[T]{
 		head:   nil,
 		tail:   nil,
 		length: 0,
 	}
 }
 
-func (list *linkedList[T]) GetSize() int {
+func NewWithInitValue[T any](item *T) *LinkedList[T] {
+	newNode := &node[T]{element: item, nextNode: nil}
+	return &LinkedList[T]{
+		head:   newNode,
+		tail:   newNode,
+		length: 1,
+	}
+}
+
+func (list *LinkedList[T]) GetSize() int {
 	return list.length
 }
 
-func (list *linkedList[T]) AddFront(item *T) {
+func (list *LinkedList[T]) AddFront(item *T) {
 	newNode := &node[T]{element: item, nextNode: nil}
 	if list.head == nil {
 		list.head = newNode
@@ -53,7 +62,7 @@ func (list *linkedList[T]) AddFront(item *T) {
 	list.length++
 }
 
-func (list *linkedList[T]) AddBack(item *T) {
+func (list *LinkedList[T]) AddBack(item *T) {
 	newNode := &node[T]{element: item, nextNode: nil}
 	if list.head == nil {
 		list.head = newNode
@@ -68,7 +77,7 @@ func (list *linkedList[T]) AddBack(item *T) {
 }
 
 // FindByStructField finds element in linked list by fieldName only if this field is accessible.
-func (list *linkedList[T]) FindByStructField(fieldName string, fieldValue interface{}) (*T, bool) {
+func (list *LinkedList[T]) FindByStructField(fieldName string, fieldValue interface{}) (*T, bool) {
 	current := list.head
 
 	var field reflect.Value
@@ -88,7 +97,7 @@ func (list *linkedList[T]) FindByStructField(fieldName string, fieldValue interf
 }
 
 // RemoveByStructField removes element in linked list by fieldName only if this field is accessible.
-func (list *linkedList[T]) RemoveByStructField(fieldName string, fieldValue any) error {
+func (list *LinkedList[T]) RemoveByStructField(fieldName string, fieldValue any) error {
 	if list.length == 0 {
 		return ErrorElementNotRemoved
 	}
@@ -131,7 +140,7 @@ func (list *linkedList[T]) RemoveByStructField(fieldName string, fieldValue any)
 	return ErrorElementNotRemoved
 }
 
-func (list *linkedList[T]) RemoveFront() *T {
+func (list *LinkedList[T]) RemoveFront() *T {
 	element := list.head.element
 	list.head = list.head.nextNode
 	list.length--
@@ -143,7 +152,7 @@ func (list *linkedList[T]) RemoveFront() *T {
 	return element
 }
 
-func (list *linkedList[T]) PrintList() {
+func (list *LinkedList[T]) PrintList() {
 	current := list.head
 	for current != nil {
 		fmt.Printf("%v ", current.element)
@@ -152,7 +161,7 @@ func (list *linkedList[T]) PrintList() {
 	fmt.Printf("\n")
 }
 
-func (list *linkedList[T]) Clear() {
+func (list *LinkedList[T]) Clear() {
 	list.head = nil
 	list.tail = nil
 	list.length = 0
