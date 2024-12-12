@@ -76,6 +76,19 @@ func (list *LinkedList[T]) AddBack(item *T) {
 	list.length++
 }
 
+func (list *LinkedList[T]) Find(element *T, cmp func(a, b *T) bool) (*T, bool) {
+	current := list.head
+
+	for current != nil {
+		if cmp(element, current.element) {
+			return current.element, true
+		}
+		current = current.nextNode
+	}
+
+	return nil, false
+}
+
 // FindByStructField finds element in linked list by fieldName only if this field is accessible.
 func (list *LinkedList[T]) FindByStructField(fieldName string, fieldValue interface{}) (*T, bool) {
 	current := list.head
