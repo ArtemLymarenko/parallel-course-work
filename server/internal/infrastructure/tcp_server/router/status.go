@@ -9,13 +9,14 @@ type ResponseStatus int
 const (
 	OK ResponseStatus = iota
 	Processing
-	DataNotFound
+	NotFound
+	BadRequest
 	InternalServerError
 )
 
 func (requestStatus ResponseStatus) Validate() error {
 	switch requestStatus {
-	case OK, DataNotFound, Processing, InternalServerError:
+	case OK, NotFound, Processing, InternalServerError, BadRequest:
 		return nil
 	default:
 		return ErrInvalidRequestStatus

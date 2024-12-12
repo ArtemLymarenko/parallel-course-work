@@ -2,10 +2,12 @@ const net = require('net');
 
 const requestContext = {
     meta: {
-        path: 'status1',
-        method: 'POST',
+        path: '/search',
+        method: 'GET',
     },
-    body: 'Sample data',
+    body: {
+        query: "chemistry between Kutcher"
+    },
 };
 
 const HOST = '127.0.0.1';
@@ -28,7 +30,7 @@ client.connect(PORT, HOST, () => {
 });
 
 client.on('data', (data) => {
-    console.log('Received answer from server:', data.toString());
+    console.log('Received answer from server:', JSON.parse(data.toString()));
 
     client.destroy();
 });

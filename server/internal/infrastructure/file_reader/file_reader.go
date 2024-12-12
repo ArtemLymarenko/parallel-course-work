@@ -8,12 +8,12 @@ import (
 
 type fileReader struct{}
 
-func NewReader() *fileReader {
+func New() *fileReader {
 	return &fileReader{}
 }
 
-func (r *fileReader) Read(dir, fileName string) ([]byte, error) {
-	file, err := os.Open(dir + "/" + fileName)
+func (r *fileReader) Read(filePath string) ([]byte, error) {
+	file, err := os.Open(filePath)
 	if err != nil {
 		return nil, err
 	}

@@ -8,8 +8,8 @@ import (
 )
 
 func TestParseContent(t *testing.T) {
-	reader := fileReader.NewReader()
-	invIdx := New(reader)
+	reader := fileReader.New()
+	invIdx := New("../../../resources/", reader)
 	text := `Hello,<br /><br />World,  World,  World, iast's a<br /> beautiful "chopper! " "?,,,.. . right now the `
 	parseText := invIdx.parseText(text)
 
@@ -23,17 +23,17 @@ func TestParseContent(t *testing.T) {
 }
 
 func TestInvertedIndexBuild(t *testing.T) {
-	reader := fileReader.NewReader()
-	invIdx := New(reader)
-	fileNames := []string{"0_2.txt", "1_3.txt", "2_3.txt", "3_4.txt"}
-	invIdx.Build(fileNames)
+	reader := fileReader.New()
+	invIdx := New("../../../resources/", reader)
+
+	if len(invIdx.storage) == 0 {
+		t.Errorf("InvertedIndex storage is empty")
+	}
 }
 
 func TestInvertedIndexSearch(t *testing.T) {
-	reader := fileReader.NewReader()
-	invIdx := New(reader)
-	fileNames := []string{"0_2.txt", "1_3.txt", "2_3.txt", "3_4.txt"}
-	invIdx.Build(fileNames)
+	reader := fileReader.New()
+	invIdx := New("../../../resources/", reader)
 
 	files := invIdx.Search("always")
 	fmt.Println(files)
@@ -44,9 +44,9 @@ func TestInvertedIndexSearch(t *testing.T) {
 		}
 	}
 
-	files = invIdx.Search("Seems like he makes movies specifically")
+	files = invIdx.Search("chemistry between Kutcher")
 	fmt.Println(files)
-	result2 := []string{"3_4.txt"}
+	result2 := []string{"1_3.txt"}
 	for _, w := range files {
 		if !slices.Contains(result2, w) {
 			t.Errorf("Parsed text does not contain %s", w)

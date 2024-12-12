@@ -1,16 +1,15 @@
 package invertedIdx
 
 import (
+	"fmt"
 	"parallel-course-work/pkg/set"
 	"regexp"
 	"strings"
 	"sync"
 )
 
-const resourcesDir = "D:/Development/GOLang/parallel-course-work/server/resources"
-
 type FileReader interface {
-	Read(dir, fileName string) ([]byte, error)
+	Read(filePath string) ([]byte, error)
 }
 
 type InvertedIndex struct {
@@ -20,7 +19,7 @@ type InvertedIndex struct {
 	fileReader  FileReader
 }
 
-func New(fileReader FileReader) *InvertedIndex {
+func New(resourceDir string, fileReader FileReader) *InvertedIndex {
 	commonWords := set.NewSet[string]()
 	words := []string{
 		"the", "be", "to", "of", "and", "a", "in", "that", "have", "i",
@@ -34,12 +33,16 @@ func New(fileReader FileReader) *InvertedIndex {
 		commonWords.Add(word)
 	}
 
-	return &InvertedIndex{
+	invIndex := &InvertedIndex{
 		storage:     make(map[string]*set.Set[string]),
 		lock:        sync.RWMutex{},
 		commonWords: commonWords,
 		fileReader:  fileReader,
 	}
+
+	invIndex.Build(resourceDir, []string{"0_2.txt", "1_3.txt", "2_3.txt", "3_4.txt"})
+
+	return invIndex
 }
 
 func (i *InvertedIndex) parseText(content string) []string {
@@ -63,16 +66,17 @@ func (i *InvertedIndex) parseText(content string) []string {
 	return uniqueWords.ToSlice()
 }
 
-func (i *InvertedIndex) Build(fileNames []string) {
+func (i *InvertedIndex) Build(resourceDir string, fileNames []string) {
 	for _, fileName := range fileNames {
-		if err := i.AddFile(fileName); err != nil {
+		if err := i.AddFile(resourceDir, fileName); err != nil {
+			fmt.Println(err)
 			continue
 		}
 	}
 }
 
-func (i *InvertedIndex) AddFile(fileName string) error {
-	fileContent, err := i.fileReader.Read(resourcesDir, fileName)
+func (i *InvertedIndex) AddFile(resourcesDir, fileName string) error {
+	fileContent, err := i.fileReader.Read(resourcesDir + fileName)
 	if err != nil {
 		return err
 	}
@@ -119,5 +123,4 @@ func (i *InvertedIndex) Search(query string) []string {
 	}
 
 	return result[:idx]
-
 }

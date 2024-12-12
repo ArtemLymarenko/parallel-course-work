@@ -43,18 +43,19 @@ func (router *Router) GetHandler(meta RequestMeta) (HandlerFunc, error) {
 	return handler, nil
 }
 
-func (router *Router) Handle(ctx *RequestContext) error {
-	handler, err := router.GetHandler(ctx.Request.RequestMeta)
+func (router *Router) Handle(requestCtx *RequestContext) error {
+	handler, err := router.GetHandler(requestCtx.Request.RequestMeta)
 	if err != nil {
 		return err
 	}
 
-	return handler(ctx)
+	return handler(requestCtx)
 }
 
 func (router *Router) ParseRawRequest(raw []byte) (*Request, error) {
 	request := &Request{}
 	err := json.Unmarshal(raw, request)
+
 	if err != nil {
 		return nil, err
 	}

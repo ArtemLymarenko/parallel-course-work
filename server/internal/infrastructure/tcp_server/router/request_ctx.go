@@ -11,13 +11,8 @@ type RequestMeta struct {
 }
 
 type Request struct {
-	RequestMeta RequestMeta `json:"meta"`
-	Body        any         `json:"body"`
-}
-
-type Response struct {
-	Status ResponseStatus `json:"status"`
-	Body   any            `json:"body"`
+	RequestMeta RequestMeta     `json:"meta"`
+	Body        json.RawMessage `json:"body,omitempty"`
 }
 
 type RequestContext struct {
@@ -30,6 +25,11 @@ func NewRequestContext(request *Request, conn net.Conn) *RequestContext {
 		conn,
 		request,
 	}
+}
+
+type Response struct {
+	Status ResponseStatus `json:"status"`
+	Body   any            `json:"body"`
 }
 
 func (request *RequestContext) ResponseJSON(status ResponseStatus, data any) error {
