@@ -1,5 +1,37 @@
 const net = require('net');
 
+function fetchData(requestContext, host = '127.0.0.1', port = 8080) {
+    return new Promise((resolve, reject) => {
+        const client = new net.Socket();
+
+        client.connect(port, host, () => {
+            const jsonData = JSON.stringify(requestContext);
+            const lengthBuffer = Buffer.alloc(4);
+            lengthBuffer.writeUInt32BE(Buffer.byteLength(jsonData), 0);
+
+            console.log('Sending request:', requestContext);
+            client.write(lengthBuffer);
+            client.write(jsonData);
+        });
+
+        client.on('data', (data) => {
+            try {
+                const parsedData = JSON.parse(data.toString());
+                resolve(parsedData);
+            } catch (error) {
+                reject('Error parsing data: ' + error.message);
+            }
+            client.destroy();
+        });
+
+        client.on('close', () => {});
+
+        client.on('error', (err) => {
+            reject('Error occurred: ' + err.message);
+        });
+    });
+}
+
 const requestContext = {
     meta: {
         path: '/search',
@@ -10,35 +42,12 @@ const requestContext = {
     },
 };
 
-const HOST = '127.0.0.1';
-const PORT = 8080;
+fetchData(requestContext)
+    .then(response => {
+        console.log('Received response:', response);
+    })
+    .catch(error => {
+        console.error('Error:', error);
+    });
 
-const client = new net.Socket();
 
-client.connect(PORT, HOST, () => {
-    console.log('Connection established');
-
-    const jsonData = JSON.stringify(requestContext);
-    const lengthBuffer = Buffer.alloc(4);
-    lengthBuffer.writeUInt32BE(Buffer.byteLength(jsonData), 0);
-
-    console.log('Sending:', lengthBuffer);
-    client.write(lengthBuffer);
-
-    console.log('Sending:', jsonData);
-    client.write(jsonData);
-});
-
-client.on('data', (data) => {
-    console.log('Received answer from server:', JSON.parse(data.toString()));
-
-    client.destroy();
-});
-
-client.on('close', () => {
-    console.log("Connection closed");
-});
-
-client.on('error', (err) => {
-    console.error('Error occurred:', err.message);
-});
