@@ -6,7 +6,7 @@ const requestContext = {
         method: 'GET',
     },
     body: {
-        query: "chemistry between Kutcher"
+        query: "mr",
     },
 };
 

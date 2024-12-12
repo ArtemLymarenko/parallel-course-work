@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"encoding/json"
 	"log"
 	tcpRouter "parallel-course-work/server/internal/infrastructure/tcp_server/router"
 	"parallel-course-work/server/internal/inteface/rest/dto"
@@ -23,17 +22,13 @@ func NewInvertedIndex(invIndexService InvertedIndexService) *InvertedIndex {
 
 func (i *InvertedIndex) Search(ctx *tcpRouter.RequestContext) error {
 	var body dto.SearchRequest
-	err := json.Unmarshal(ctx.Request.Body, &body)
-
+	err := ctx.ShouldParseBodyJSON(&body)
 	if err != nil {
 		errorResponse := dto.ErrorResponse{
 			Message: "could not parse request body",
 		}
-		if err = ctx.ResponseJSON(tcpRouter.BadRequest, errorResponse); err != nil {
-			log.Println("error parsing request body:", err)
-			return err
-		}
-		return nil
+		log.Println("error parsing request body:", err)
+		return ctx.ResponseJSON(tcpRouter.BadRequest, errorResponse)
 	}
 
 	result := i.invIndexService.Search(body.Query)
