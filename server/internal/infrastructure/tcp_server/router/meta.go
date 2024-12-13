@@ -7,6 +7,11 @@ var (
 	ErrInvalidRequestPath   = errors.New("invalid request path")
 )
 
+type RequestMeta struct {
+	Path   RequestPath   `json:"path"`
+	Method RequestMethod `json:"method"`
+}
+
 type RequestMethod string
 
 const (

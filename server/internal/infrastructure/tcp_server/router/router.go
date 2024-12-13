@@ -34,12 +34,7 @@ func (router *Router) AddRoute(method RequestMethod, path RequestPath, handlerFu
 	log.Printf("Registered route - Method: %v, Path: %v\n", rm.Method, rm.Path)
 }
 
-func (router *Router) Handle(rawRequest []byte, conn net.Conn) error {
-	request, err := router.parseRawRequest(rawRequest)
-	if err != nil {
-		return err
-	}
-
+func (router *Router) Handle(request *Request, conn net.Conn) error {
 	requestCtx := NewRequestContext(request, conn)
 	handler, err := router.getHandler(requestCtx.Request.RequestMeta)
 	if err != nil {
@@ -64,7 +59,7 @@ func (router *Router) getHandler(meta RequestMeta) (HandlerFunc, error) {
 	return handler, nil
 }
 
-func (router *Router) parseRawRequest(raw []byte) (*Request, error) {
+func (router *Router) ParseRawRequest(raw []byte) (*Request, error) {
 	request := &Request{}
 	err := json.Unmarshal(raw, request)
 

@@ -59,6 +59,7 @@ const requestContext = {
     body: {
         query: "mr",
     },
+    connectionAlive: true,
 };
 
 const requestContext2 = {
@@ -67,8 +68,9 @@ const requestContext2 = {
         method: 'GET',
     },
     body: {
-        queasry: "mr",
+        query: "mr",
     },
+    connectionAlive: false,
 };
 
 (async function () {
@@ -78,9 +80,21 @@ const requestContext2 = {
 
         const response2 = await client.sendRequest(requestContext2);
         console.log('Received response 2:', response2);
+
+        const response3 = await client.sendRequest(requestContext);
+        console.log('Received response 3:', response3);
+
+        const response4 = await client.sendRequest(requestContext2);
+        console.log('Received response 4:', response4);
+
+        const response5 = await client.sendRequest(requestContext);
+        console.log('Received response 5:', response5);
+
+        const response6 = await client.sendRequest(requestContext2);
+        console.log('Received response 6:', response6);
     } catch (error) {
         console.error('Error:', error);
-     } finally {
+    } finally {
         client.close()
     }
 })();

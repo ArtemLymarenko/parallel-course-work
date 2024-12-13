@@ -11,6 +11,7 @@ import (
 	"os"
 	"os/signal"
 	"parallel-course-work/pkg/threadpool"
+	tcpRouter "parallel-course-work/server/internal/infrastructure/tcp_server/router"
 	"sync"
 	"sync/atomic"
 	"syscall"
@@ -24,8 +25,11 @@ type ThreadPool interface {
 }
 
 type Router interface {
-	Handle(raw []byte, conn net.Conn) error
+	Handle(req *tcpRouter.Request, conn net.Conn) error
+	ParseRawRequest(raw []byte) (*tcpRouter.Request, error)
 }
+
+const AliveTimeout = 2 * time.Second
 
 type Server struct {
 	port           int
@@ -56,6 +60,7 @@ func (server *Server) Start() error {
 		return err
 	}
 	defer conn.Close()
+
 	server.conn = conn
 	log.Printf("Server started on port: %v\n", server.port)
 
@@ -88,40 +93,94 @@ func (server *Server) acceptConnections() {
 
 			connIdx := idx.Add(1)
 			log.Printf("client connection [%v] opened\n", connIdx)
-			go func() {
-				err = server.handleConnectionAlive(conn, connIdx)
-				if err != nil {
-					log.Printf("error occurred: %v\n", err)
-				}
-			}()
+			if err := server.handleConnections(conn, connIdx); err != nil {
+				log.Printf("error happened %v\n", err)
+			}
 		}
 	}
 }
 
-func (server *Server) handleConnection(clientConn net.Conn, connIdx int64) error {
+func (server *Server) handleConnections(clientConn net.Conn, connIdx int64) error {
 	rawRequest, err := server.readMessage(clientConn)
 	if err != nil {
-		if err == io.EOF {
-			log.Printf("client [%v] disconnected\n", connIdx)
-			return nil
-		}
+		return err
+	}
 
+	request, err := server.router.ParseRawRequest(rawRequest)
+	if err != nil {
 		return err
 	}
 
 	task := threadpool.NewTask(server.taskIds.Add(1), func() error {
 		defer func() {
-			if err := clientConn.Close(); err != nil {
+			if !request.ConnectionAlive {
+				if err = clientConn.Close(); err != nil {
+					log.Printf("error occurred: %v\n", err)
+				}
+				log.Printf("client [%v] disconnected\n", connIdx)
+			}
+		}()
+		return server.router.Handle(request, clientConn)
+	})
+
+	log.Printf("Request: method: %v - path: %v\n", request.RequestMeta.Method, request.RequestMeta.Path)
+	err = server.threadPool.AddTask(task)
+	if err != nil {
+		return err
+	}
+
+	if request.ConnectionAlive {
+		go func() {
+			err = server.handleConnectionAlive(clientConn, connIdx, AliveTimeout)
+			if err != nil {
 				log.Printf("error occurred: %v\n", err)
 			}
 		}()
-		return server.router.Handle(rawRequest, clientConn)
-	})
+	}
 
-	return server.threadPool.AddTask(task)
+	return nil
 }
 
-func (server *Server) handleConnectionAlive(clientConn net.Conn, connIdx int64) error {
+func (server *Server) handleSingleRequestAlive(clientConn net.Conn, connIdx int64, timeout time.Duration) error {
+	if err := clientConn.SetReadDeadline(time.Now().Add(timeout)); err != nil {
+		log.Printf("failed to set read deadline: %v\n", err)
+		return err
+	}
+
+	rawRequest, err := server.readMessage(clientConn)
+	if err != nil {
+		if netErr, ok := err.(net.Error); ok && netErr.Timeout() {
+			log.Printf("client [%v] timed out\n", connIdx)
+			_ = clientConn.SetReadDeadline(time.Time{})
+			return io.EOF
+		}
+
+		return err
+	}
+
+	request, err := server.router.ParseRawRequest(rawRequest)
+	if err != nil {
+		return err
+	}
+
+	task := threadpool.NewTask(server.taskIds.Add(1), func() error {
+		return server.router.Handle(request, clientConn)
+	})
+
+	log.Printf("Request: method: %v - path: %v\n", request.RequestMeta.Method, request.RequestMeta.Path)
+	err = server.threadPool.AddTask(task)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (server *Server) handleConnectionAlive(
+	clientConn net.Conn,
+	connIdx int64,
+	timeout time.Duration,
+) error {
 	defer func() {
 		if err := clientConn.Close(); err != nil {
 			log.Printf("error occurred: %v\n", err)
@@ -129,22 +188,12 @@ func (server *Server) handleConnectionAlive(clientConn net.Conn, connIdx int64) 
 	}()
 
 	for {
-		rawRequest, err := server.readMessage(clientConn)
+		err := server.handleSingleRequestAlive(clientConn, connIdx, timeout)
 		if err != nil {
 			if errors.Is(err, io.EOF) {
 				log.Printf("client [%v] disconnected\n", connIdx)
 				break
 			}
-
-			return err
-		}
-
-		task := threadpool.NewTask(server.taskIds.Add(1), func() error {
-			return server.router.Handle(rawRequest, clientConn)
-		})
-
-		err = server.threadPool.AddTask(task)
-		if err != nil {
 			return err
 		}
 	}
@@ -159,6 +208,11 @@ func (server *Server) readMessage(clientConn net.Conn) ([]byte, error) {
 		if errors.Is(err, io.EOF) {
 			return nil, err
 		}
+
+		if netErr, ok := err.(net.Error); ok && netErr.Timeout() {
+			return nil, netErr
+		}
+
 		return nil, errors.New("error reading message length")
 	}
 	messageLength := int(lengthBuffer[0])<<24 | int(lengthBuffer[1])<<16 | int(lengthBuffer[2])<<8 | int(lengthBuffer[3])
