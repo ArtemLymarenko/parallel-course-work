@@ -19,15 +19,13 @@ function fetchData(requestContext, host = '127.0.0.1', port = 8080) {
                 const parsedData = JSON.parse(data.toString());
                 resolve(parsedData);
             } catch (error) {
-                reject('Error parsing data: ' + error.message);
+                reject(error.message);
             }
             client.destroy();
         });
 
-        client.on('close', () => {});
-
         client.on('error', (err) => {
-            reject('Error occurred: ' + err.message);
+            reject(err.message);
         });
     });
 }
@@ -42,12 +40,16 @@ const requestContext = {
     },
 };
 
-fetchData(requestContext)
-    .then(response => {
-        console.log('Received response:', response);
-    })
-    .catch(error => {
+(async function () {
+    try {
+        const response1 = await fetchData(requestContext);
+        console.log('Received response 1:', response1);
+
+        const response2 = await fetchData(requestContext);
+        console.log('Received response 2:', response2);
+    } catch (error) {
         console.error('Error:', error);
-    });
+    }
+})();
 
 

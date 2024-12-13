@@ -3,6 +3,7 @@ package tcpServer
 import (
 	"bytes"
 	"context"
+	"errors"
 	"fmt"
 	"io"
 	"log"
@@ -10,7 +11,6 @@ import (
 	"os"
 	"os/signal"
 	"parallel-course-work/pkg/threadpool"
-	tcpRouter "parallel-course-work/server/internal/infrastructure/tcp_server/router"
 	"sync"
 	"sync/atomic"
 	"syscall"
@@ -24,23 +24,25 @@ type ThreadPool interface {
 }
 
 type Router interface {
-	Handle(request *tcpRouter.RequestContext) error
-	ParseRawRequest(raw []byte) (*tcpRouter.Request, error)
+	Handle(raw []byte, conn net.Conn) error
 }
 
 type Server struct {
-	port       int
-	errorCount int
-	conn       net.Listener
-	threadPool ThreadPool
-	router     Router
+	port           int
+	conn           net.Listener
+	threadPool     ThreadPool
+	router         Router
+	shutdownSignal chan struct{}
+	taskIds        atomic.Int64
 }
 
 func New(port int, threadPool ThreadPool, router Router) *Server {
 	return &Server{
-		port:       port,
-		threadPool: threadPool,
-		router:     router,
+		port:           port,
+		threadPool:     threadPool,
+		router:         router,
+		shutdownSignal: make(chan struct{}),
+		taskIds:        atomic.Int64{},
 	}
 }
 
@@ -54,9 +56,8 @@ func (server *Server) Start() error {
 		return err
 	}
 	defer conn.Close()
-
 	server.conn = conn
-	fmt.Println("Server started on port:", server.port)
+	log.Printf("Server started on port: %v\n", server.port)
 
 	wg := sync.WaitGroup{}
 	wg.Add(1)
@@ -66,6 +67,7 @@ func (server *Server) Start() error {
 	server.acceptConnections()
 
 	wg.Wait()
+
 	return nil
 }
 
@@ -74,19 +76,24 @@ func (server *Server) acceptConnections() {
 	idx.Store(0)
 
 	for {
-		conn, err := server.conn.Accept()
-		if err != nil {
-			server.errorCount++
-			if server.errorCount > 20 {
-				log.Fatal("Too many errors occurred:", err)
+		select {
+		case <-server.shutdownSignal:
+			log.Println("Shutting down acceptConnections...")
+			return
+		default:
+			conn, err := server.conn.Accept()
+			if err != nil {
+				continue
 			}
-			continue
-		}
 
-		err = server.handleConnection(conn, idx.Add(1))
-		if err != nil {
-			fmt.Println("Error occurred:", err)
-			continue
+			connIdx := idx.Add(1)
+			log.Printf("client connection [%v] opened\n", connIdx)
+			go func() {
+				err = server.handleConnectionAlive(conn, connIdx)
+				if err != nil {
+					log.Printf("error occurred: %v\n", err)
+				}
+			}()
 		}
 	}
 }
@@ -94,34 +101,65 @@ func (server *Server) acceptConnections() {
 func (server *Server) handleConnection(clientConn net.Conn, connIdx int64) error {
 	rawRequest, err := server.readMessage(clientConn)
 	if err != nil {
-		return err
-	}
-
-	request, err := server.router.ParseRawRequest(rawRequest)
-	if err != nil {
-		return err
-	}
-
-	requestCtx := tcpRouter.NewRequestContext(request, clientConn)
-
-	task := threadpool.NewTask(connIdx, func() error {
-		defer clientConn.Close()
-		if err := server.router.Handle(requestCtx); err != nil {
-			_ = requestCtx.ResponseJSON(tcpRouter.InternalServerError, err.Error())
-			return err
+		if err == io.EOF {
+			log.Printf("client [%v] disconnected\n", connIdx)
+			return nil
 		}
 
-		return nil
+		return err
+	}
+
+	task := threadpool.NewTask(server.taskIds.Add(1), func() error {
+		defer func() {
+			if err := clientConn.Close(); err != nil {
+				log.Printf("error occurred: %v\n", err)
+			}
+		}()
+		return server.router.Handle(rawRequest, clientConn)
 	})
 
 	return server.threadPool.AddTask(task)
+}
+
+func (server *Server) handleConnectionAlive(clientConn net.Conn, connIdx int64) error {
+	defer func() {
+		if err := clientConn.Close(); err != nil {
+			log.Printf("error occurred: %v\n", err)
+		}
+	}()
+
+	for {
+		rawRequest, err := server.readMessage(clientConn)
+		if err != nil {
+			if errors.Is(err, io.EOF) {
+				log.Printf("client [%v] disconnected\n", connIdx)
+				break
+			}
+
+			return err
+		}
+
+		task := threadpool.NewTask(server.taskIds.Add(1), func() error {
+			return server.router.Handle(rawRequest, clientConn)
+		})
+
+		err = server.threadPool.AddTask(task)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 func (server *Server) readMessage(clientConn net.Conn) ([]byte, error) {
 	lengthBuffer := make([]byte, 4)
 	_, err := clientConn.Read(lengthBuffer)
 	if err != nil {
-		return nil, fmt.Errorf("error reading message length: %v", err)
+		if errors.Is(err, io.EOF) {
+			return nil, err
+		}
+		return nil, errors.New("error reading message length")
 	}
 	messageLength := int(lengthBuffer[0])<<24 | int(lengthBuffer[1])<<16 | int(lengthBuffer[2])<<8 | int(lengthBuffer[3])
 
@@ -134,9 +172,10 @@ func (server *Server) readMessage(clientConn net.Conn) ([]byte, error) {
 		chunk := make([]byte, 2048)
 		n, err := clientConn.Read(chunk)
 		if err != nil {
-			if err == io.EOF {
-				break
+			if errors.Is(err, io.EOF) {
+				return nil, err
 			}
+
 			return nil, fmt.Errorf("error reading: %v", err)
 		}
 
@@ -155,6 +194,7 @@ func (server *Server) gracefulShutDown(wg *sync.WaitGroup) {
 	signal.Notify(sigint, os.Interrupt, syscall.SIGTERM)
 	<-sigint
 
+	close(server.shutdownSignal)
 	_, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
@@ -164,6 +204,6 @@ func (server *Server) gracefulShutDown(wg *sync.WaitGroup) {
 
 	server.threadPool.MustTerminate()
 
-	fmt.Println("Server stopped")
+	log.Printf("server stopped\n")
 	wg.Done()
 }

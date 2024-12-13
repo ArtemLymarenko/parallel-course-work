@@ -3,8 +3,8 @@ package tcpRouter
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
 	"log"
+	"net"
 )
 
 var ErrRouteNotFound = errors.New("route not found")
@@ -31,10 +31,31 @@ func (router *Router) AddRoute(method RequestMethod, path RequestPath, handlerFu
 
 	rm := RequestMeta{path, method}
 	router.routes[rm] = handlerFunc
-	fmt.Printf("Registered route - Method: %v, Path: %v\n", rm.Method, rm.Path)
+	log.Printf("Registered route - Method: %v, Path: %v\n", rm.Method, rm.Path)
 }
 
-func (router *Router) GetHandler(meta RequestMeta) (HandlerFunc, error) {
+func (router *Router) Handle(rawRequest []byte, conn net.Conn) error {
+	request, err := router.parseRawRequest(rawRequest)
+	if err != nil {
+		return err
+	}
+
+	requestCtx := NewRequestContext(request, conn)
+	handler, err := router.getHandler(requestCtx.Request.RequestMeta)
+	if err != nil {
+		_ = requestCtx.ResponseJSON(InternalServerError, err.Error())
+		return err
+	}
+
+	err = handler(requestCtx)
+	if err != nil {
+		_ = requestCtx.ResponseJSON(InternalServerError, err.Error())
+		return err
+	}
+	return nil
+}
+
+func (router *Router) getHandler(meta RequestMeta) (HandlerFunc, error) {
 	handler, ok := router.routes[meta]
 	if !ok {
 		return nil, ErrRouteNotFound
@@ -43,16 +64,7 @@ func (router *Router) GetHandler(meta RequestMeta) (HandlerFunc, error) {
 	return handler, nil
 }
 
-func (router *Router) Handle(requestCtx *RequestContext) error {
-	handler, err := router.GetHandler(requestCtx.Request.RequestMeta)
-	if err != nil {
-		return err
-	}
-
-	return handler(requestCtx)
-}
-
-func (router *Router) ParseRawRequest(raw []byte) (*Request, error) {
+func (router *Router) parseRawRequest(raw []byte) (*Request, error) {
 	request := &Request{}
 	err := json.Unmarshal(raw, request)
 

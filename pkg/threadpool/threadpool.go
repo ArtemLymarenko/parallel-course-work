@@ -1,7 +1,7 @@
 package threadpool
 
 import (
-	"fmt"
+	"errors"
 	"log"
 	"parallel-course-work/pkg/priorityqueue"
 	"sync"
@@ -87,7 +87,7 @@ func (threadPool *ThreadPool) MustRun() {
 	}
 
 	threadPool.isInitialized = true
-	fmt.Println("thread pool is running!")
+	log.Printf("thread pool is running...\n")
 }
 
 func (threadPool *ThreadPool) MustTerminate() {
@@ -106,12 +106,12 @@ func (threadPool *ThreadPool) MustTerminate() {
 	threadPool.isInitialized = false
 	threadPool.isTerminated = true
 
-	fmt.Println("threadPool terminated")
+	log.Printf("threadPool terminated\n")
 }
 
 func (threadPool *ThreadPool) AddTask(task *Task) error {
 	if !threadPool.IsWorking() {
-		return fmt.Errorf("task was not added %v", task.Id)
+		return errors.New("task was not added")
 	}
 
 	threadPool.sync.commonLock.Lock()
@@ -120,7 +120,6 @@ func (threadPool *ThreadPool) AddTask(task *Task) error {
 	threadPool.mainTaskQueue.Push(task)
 	threadPool.sync.mainWaiter.Signal()
 
-	fmt.Printf("added new task - %v\n", task.Id)
 	return nil
 }
 
@@ -147,9 +146,9 @@ func (threadPool *ThreadPool) routineThread(isPrimary bool) {
 		{
 			threadPool.sync.printLock.Lock()
 			if err != nil {
-				fmt.Printf("task [%v] failed with error: %v\n", task.Id, err.Error())
+				log.Printf("task [%v] failed with error: %v\n", task.Id, err.Error())
 			}
-			fmt.Printf("task [%v], finished in %v, by primary threads: %v\n", task.Id, timeTaken, isPrimary)
+			log.Printf("task [%v], finished in %v, by primary threads: %v\n", task.Id, timeTaken, isPrimary)
 			threadPool.sync.printLock.Unlock()
 		}
 	}
@@ -184,7 +183,7 @@ func (threadPool *ThreadPool) getTaskFromQueue(isPrimary bool) *Task {
 
 		if task != nil && task.Status == IDLE {
 			_ = task.SetStatus(PROCESSING)
-			fmt.Printf("task [%v] was taken\n", task.Id)
+			log.Printf("task [%v] was taken\n", task.Id)
 			return task
 		}
 	}
@@ -199,7 +198,7 @@ func (threadPool *ThreadPool) removeOldTasks() {
 			threadPool.secondaryTaskQueue.Push(task)
 			task.SetMoved(true)
 
-			fmt.Printf("task [%v] was moved\n", task.Id)
+			log.Printf("task [%v] was moved\n", task.Id)
 			threadPool.sync.secondaryWaiter.Signal()
 		}
 	}

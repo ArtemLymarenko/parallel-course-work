@@ -38,3 +38,8 @@ func (i *InvertedIndex) Search(ctx *tcpRouter.RequestContext) error {
 
 	return ctx.ResponseJSON(tcpRouter.OK, response)
 }
+
+func (i *InvertedIndex) AddFile(ctx *tcpRouter.RequestContext) error {
+
+	return nil
+}
