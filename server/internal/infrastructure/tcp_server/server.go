@@ -164,6 +164,14 @@ func (server *Server) handleSingleRequestAlive(clientConn net.Conn, connIdx int6
 	}
 
 	task := threadpool.NewTask(server.taskIds.Add(1), func() error {
+		defer func() {
+			if !request.ConnectionAlive {
+				if err = clientConn.Close(); err != nil {
+					log.Printf("error occurred: %v\n", err)
+				}
+				log.Printf("client [%v] disconnected\n", connIdx)
+			}
+		}()
 		return server.router.Handle(request, clientConn)
 	})
 
@@ -181,12 +189,7 @@ func (server *Server) handleConnectionAlive(
 	connIdx int64,
 	timeout time.Duration,
 ) error {
-	defer func() {
-		if err := clientConn.Close(); err != nil {
-			log.Printf("error occurred: %v\n", err)
-		}
-	}()
-
+	defer clientConn.Close()
 	for {
 		err := server.handleSingleRequestAlive(clientConn, connIdx, timeout)
 		if err != nil {
@@ -194,6 +197,7 @@ func (server *Server) handleConnectionAlive(
 				log.Printf("client [%v] disconnected\n", connIdx)
 				break
 			}
+
 			return err
 		}
 	}
@@ -205,15 +209,13 @@ func (server *Server) readMessage(clientConn net.Conn) ([]byte, error) {
 	lengthBuffer := make([]byte, 4)
 	_, err := clientConn.Read(lengthBuffer)
 	if err != nil {
-		if errors.Is(err, io.EOF) {
-			return nil, err
+		if netErr, ok := err.(net.Error); ok {
+			if netErr.Timeout() {
+				return nil, netErr
+			}
 		}
 
-		if netErr, ok := err.(net.Error); ok && netErr.Timeout() {
-			return nil, netErr
-		}
-
-		return nil, errors.New("error reading message length")
+		return nil, err
 	}
 	messageLength := int(lengthBuffer[0])<<24 | int(lengthBuffer[1])<<16 | int(lengthBuffer[2])<<8 | int(lengthBuffer[3])
 
@@ -228,6 +230,10 @@ func (server *Server) readMessage(clientConn net.Conn) ([]byte, error) {
 		if err != nil {
 			if errors.Is(err, io.EOF) {
 				return nil, err
+			}
+
+			if netErr, ok := err.(net.Error); ok && netErr.Timeout() {
+				return nil, netErr
 			}
 
 			return nil, fmt.Errorf("error reading: %v", err)

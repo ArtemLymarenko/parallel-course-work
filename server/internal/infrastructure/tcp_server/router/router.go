@@ -38,13 +38,13 @@ func (router *Router) Handle(request *Request, conn net.Conn) error {
 	requestCtx := NewRequestContext(request, conn)
 	handler, err := router.getHandler(requestCtx.Request.RequestMeta)
 	if err != nil {
-		_ = requestCtx.ResponseJSON(InternalServerError, err.Error())
+		_ = requestCtx.ResponseJSON(StatusInternalServerError, err.Error())
 		return err
 	}
 
 	err = handler(requestCtx)
 	if err != nil {
-		_ = requestCtx.ResponseJSON(InternalServerError, err.Error())
+		_ = requestCtx.ResponseJSON(StatusInternalServerError, err.Error())
 		return err
 	}
 	return nil

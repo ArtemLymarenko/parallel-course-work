@@ -7,16 +7,16 @@ var ErrInvalidRequestStatus = errors.New("invalid request status")
 type ResponseStatus int
 
 const (
-	OK ResponseStatus = iota
-	Processing
-	NotFound
-	BadRequest
-	InternalServerError
+	StatusOK ResponseStatus = iota + 1
+	StatusProcessing
+	StatusNotFound
+	StatusBadRequest
+	StatusInternalServerError
 )
 
 func (requestStatus ResponseStatus) Validate() error {
 	switch requestStatus {
-	case OK, NotFound, Processing, InternalServerError, BadRequest:
+	case StatusOK, StatusNotFound, StatusProcessing, StatusInternalServerError, StatusBadRequest:
 		return nil
 	default:
 		return ErrInvalidRequestStatus

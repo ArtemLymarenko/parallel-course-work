@@ -15,13 +15,14 @@ type RequestMeta struct {
 type RequestMethod string
 
 const (
-	GET  RequestMethod = "GET"
-	POST RequestMethod = "POST"
+	GET    RequestMethod = "GET"
+	POST   RequestMethod = "POST"
+	DELETE RequestMethod = "DELETE"
 )
 
 func (requestMethod RequestMethod) Validate() error {
 	switch requestMethod {
-	case GET, POST:
+	case GET, POST, DELETE:
 		return nil
 	default:
 		return ErrInvalidRequestMethod

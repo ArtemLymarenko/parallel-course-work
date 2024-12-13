@@ -78,13 +78,13 @@ const requestContext2 = {
         const response1 = await client.sendRequest(requestContext);
         console.log('Received response 1:', response1);
 
-        const response2 = await client.sendRequest(requestContext2);
+        const response2 = await client.sendRequest(requestContext);
         console.log('Received response 2:', response2);
 
-        const response3 = await client.sendRequest(requestContext);
+        const response3 = await client.sendRequest(requestContext2);
         console.log('Received response 3:', response3);
 
-        const response4 = await client.sendRequest(requestContext2);
+        const response4 = await client.sendRequest(requestContext);
         console.log('Received response 4:', response4);
 
         const response5 = await client.sendRequest(requestContext);

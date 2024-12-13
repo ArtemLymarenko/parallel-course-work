@@ -94,6 +94,36 @@ func (i *InvertedIndex) AddFile(resourcesDir, fileName string) error {
 	return nil
 }
 
+func (i *InvertedIndex) GetFileContent(resourcesDir, fileName string) ([]byte, error) {
+	fileContent, err := i.fileReader.Read(resourcesDir + fileName)
+	if err != nil {
+		return nil, err
+	}
+
+	return fileContent, nil
+}
+
+func (i *InvertedIndex) RemoveFile(resourcesDir, fileName string) error {
+	fileContent, err := i.fileReader.Read(resourcesDir + fileName)
+	if err != nil {
+		return err
+	}
+
+	parsedFileContent := i.parseText(string(fileContent))
+	i.lock.Lock()
+	for _, word := range parsedFileContent {
+		if fileSet, exists := i.storage[word]; exists {
+			fileSet.Remove(fileName)
+			if fileSet.IsEmpty() {
+				delete(i.storage, word)
+			}
+		}
+	}
+	i.lock.Unlock()
+
+	return nil
+}
+
 func (i *InvertedIndex) Search(query string) []string {
 	parsed := i.parseText(query)
 

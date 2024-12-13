@@ -1,7 +1,5 @@
 package set
 
-import "fmt"
-
 type Set[K comparable] struct {
 	Keys map[K]struct{}
 }
@@ -37,8 +35,4 @@ func (set *Set[K]) ToSlice() []K {
 		i++
 	}
 	return keys
-}
-
-func (set *Set[K]) String() string {
-	return fmt.Sprintf("%v", set.Keys)
 }
