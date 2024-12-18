@@ -3,8 +3,11 @@ package fileReader
 import (
 	"bufio"
 	"errors"
+	"log"
 	"os"
 )
+
+var ErrReadFile = errors.New("failed to read the file")
 
 type fileReader struct{}
 
@@ -17,7 +20,11 @@ func (r *fileReader) Read(filePath string) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	defer file.Close()
+	defer func() {
+		if err = file.Close(); err != nil {
+			log.Println("failed to close the file: ", err)
+		}
+	}()
 
 	fileInfo, err := file.Stat()
 	if err != nil {
@@ -25,13 +32,13 @@ func (r *fileReader) Read(filePath string) ([]byte, error) {
 	}
 
 	result := make([]byte, fileInfo.Size())
-	fileReader := bufio.NewReader(file)
+	reader := bufio.NewReader(file)
 	chunk := make([]byte, 1024)
 	offset := 0
 	for {
-		n, err := fileReader.Read(chunk)
+		n, err := reader.Read(chunk)
 		if err != nil && err.Error() != "EOF" {
-			return nil, errors.New("failed to read file")
+			return nil, ErrReadFile
 		}
 
 		if n == 0 {

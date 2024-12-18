@@ -3,18 +3,26 @@ package invertedIdx
 import (
 	"fmt"
 	"parallel-course-work/pkg/set"
+	syncMap "parallel-course-work/pkg/sync_map"
 	"regexp"
 	"strings"
-	"sync"
 )
+
+type SyncMap[V any] interface {
+	Put(string, V)
+	Get(string) (V, bool)
+	Remove(string)
+	GetSize() int64
+}
 
 type FileReader interface {
 	Read(filePath string) ([]byte, error)
 }
 
 type InvertedIndex struct {
-	storage     map[string]*set.Set[string]
-	lock        sync.RWMutex
+	//storage     map[string]*set.Set[string]
+	//lock        sync.RWMutex
+	storage     SyncMap[*set.Set[string]]
 	commonWords *set.Set[string]
 	fileReader  FileReader
 }
@@ -29,13 +37,13 @@ func New(resourceDir string, fileReader FileReader) *InvertedIndex {
 		"so", "up", "out", "if", "about", "who", "get", "which", "go", "me", "now", "him", "is", "are",
 		"was", "were", "its",
 	}
+
 	for _, word := range words {
 		commonWords.Add(word)
 	}
 
 	invIndex := &InvertedIndex{
-		storage:     make(map[string]*set.Set[string]),
-		lock:        sync.RWMutex{},
+		storage:     syncMap.NewSyncHashMap[*set.Set[string]](4, 32),
 		commonWords: commonWords,
 		fileReader:  fileReader,
 	}
@@ -82,14 +90,16 @@ func (i *InvertedIndex) AddFile(resourcesDir, fileName string) error {
 	}
 
 	parsedFileContent := i.parseText(string(fileContent))
-	i.lock.Lock()
 	for _, word := range parsedFileContent {
-		if _, exists := i.storage[word]; !exists {
-			i.storage[word] = set.NewSet[string]()
+		fileSet, exists := i.storage.Get(word)
+		if exists {
+			fileSet.Add(fileName)
+		} else {
+			newSet := set.NewSet[string]()
+			newSet.Add(fileName)
+			i.storage.Put(word, newSet)
 		}
-		i.storage[word].Add(fileName)
 	}
-	i.lock.Unlock()
 
 	return nil
 }
@@ -110,16 +120,14 @@ func (i *InvertedIndex) RemoveFile(resourcesDir, fileName string) error {
 	}
 
 	parsedFileContent := i.parseText(string(fileContent))
-	i.lock.Lock()
 	for _, word := range parsedFileContent {
-		if fileSet, exists := i.storage[word]; exists {
+		if fileSet, exists := i.storage.Get(word); exists {
 			fileSet.Remove(fileName)
 			if fileSet.IsEmpty() {
-				delete(i.storage, word)
+				i.storage.Remove(word)
 			}
 		}
 	}
-	i.lock.Unlock()
 
 	return nil
 }
@@ -130,10 +138,9 @@ func (i *InvertedIndex) Search(query string) []string {
 	filesCount := make(map[string]int)
 	maxCount := -1
 
-	i.lock.Lock()
 	for _, word := range parsed {
-		if files, exists := i.storage[word]; exists {
-			for fileName := range files.Keys {
+		if fileSet, exists := i.storage.Get(word); exists {
+			for fileName := range fileSet.Keys {
 				filesCount[fileName] += 1
 				if filesCount[fileName] > maxCount {
 					maxCount = filesCount[fileName]
@@ -141,7 +148,6 @@ func (i *InvertedIndex) Search(query string) []string {
 			}
 		}
 	}
-	i.lock.Unlock()
 
 	result := make([]string, len(filesCount))
 	idx := 0

@@ -53,7 +53,7 @@ const client = new TCPClient();
 
 const requestContext = {
     meta: {
-        path: '/search',
+        path: '/index/search',
         method: 'GET',
     },
     body: {
@@ -64,13 +64,13 @@ const requestContext = {
 
 const requestContext2 = {
     meta: {
-        path: '/search',
+        path: '/index/search',
         method: 'GET',
     },
     body: {
-        query: "mr",
+        query: "Hello asdlas as",
     },
-    connectionAlive: false,
+    connectionAlive: true,
 };
 
 (async function () {

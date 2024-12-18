@@ -2,14 +2,13 @@ package linkedList
 
 import (
 	"fmt"
-	"reflect"
 )
 
 type ILinkedList[T any] interface {
 	AddFront(item *T)
 	AddBack(item *T)
-	FindByStructField(fieldName string, fieldValue any) (*T, bool)
-	RemoveByStructField(fieldName string, fieldValue any) error
+	Find(cb func(current *node[T]) bool) (*T, bool)
+	Remove(cb func(current *node[T]) bool) error
 	RemoveFront() *T
 	GetSize() int
 	PrintList()
@@ -76,11 +75,11 @@ func (list *LinkedList[T]) AddBack(item *T) {
 	list.length++
 }
 
-func (list *LinkedList[T]) Find(element *T, cmp func(a, b *T) bool) (*T, bool) {
+func (list *LinkedList[T]) Find(cb func(current *T) bool) (*T, bool) {
 	current := list.head
 
 	for current != nil {
-		if cmp(element, current.element) {
+		if cb(current.element) {
 			return current.element, true
 		}
 		current = current.nextNode
@@ -89,68 +88,36 @@ func (list *LinkedList[T]) Find(element *T, cmp func(a, b *T) bool) (*T, bool) {
 	return nil, false
 }
 
-// FindByStructField finds element in linked list by fieldName only if this field is accessible.
-func (list *LinkedList[T]) FindByStructField(fieldName string, fieldValue interface{}) (*T, bool) {
-	current := list.head
-
-	var field reflect.Value
-	for current != nil {
-		field = reflect.ValueOf(*current.element).FieldByName(fieldName)
-		if !field.IsValid() || !field.CanInterface() {
-			return nil, false
-		}
-
-		if reflect.DeepEqual(field.Interface(), fieldValue) {
-			return current.element, true
-		}
-		current = current.nextNode
-	}
-
-	return nil, false
-}
-
-// RemoveByStructField removes element in linked list by fieldName only if this field is accessible.
-func (list *LinkedList[T]) RemoveByStructField(fieldName string, fieldValue any) error {
+func (list *LinkedList[T]) Remove(cb func(current *T) bool) {
 	if list.length == 0 {
-		return ErrorElementNotRemoved
-	}
-	field := reflect.ValueOf(*list.head.element).FieldByName(fieldName)
-	if !field.IsValid() || !field.CanInterface() {
-		return ErrorElementNotRemoved
+		return
 	}
 
-	if reflect.DeepEqual(field.Interface(), fieldValue) {
+	if cb(list.head.element) {
 		list.head = list.head.nextNode
 		list.length--
 		if list.head == nil {
 			list.tail = nil
 		}
-		return nil
+		return
 	}
 
 	var prev *node[T]
 	current := list.head
 	for current != nil {
-		field = reflect.ValueOf(*current.element).FieldByName(fieldName)
-		if !field.IsValid() || !field.CanInterface() {
-			return ErrorElementNotRemoved
-		}
-
-		if reflect.DeepEqual(field.Interface(), fieldValue) {
+		if cb(current.element) {
 			prev.nextNode = current.nextNode
 			list.length--
 
 			if current.nextNode == nil {
 				list.tail = prev
 			}
-			return nil
+			return
 		}
 
 		prev = current
 		current = current.nextNode
 	}
-
-	return ErrorElementNotRemoved
 }
 
 func (list *LinkedList[T]) RemoveFront() *T {
