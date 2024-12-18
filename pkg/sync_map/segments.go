@@ -1,6 +1,7 @@
 package syncMap
 
 import (
+	"hash/maphash"
 	"parallel-course-work/pkg/hash"
 	linkedList "parallel-course-work/pkg/linked_list"
 	"sync"
@@ -9,25 +10,22 @@ import (
 type Bucket[V any] struct {
 	Key   string
 	Value V
-	hash  uint64
 }
 
-func (b *Bucket[V]) GetHash() (uint64, bool) {
-	return b.hash, b.hash != 0
-}
-
-const maxLoadFactor float64 = 0.75
+const maxLoadFactor float64 = 0.9
 
 type segment[V any] struct {
 	innerArray []*linkedList.LinkedList[Bucket[V]]
 	lock       sync.RWMutex
 	size       int64
+	seed       maphash.Seed
 }
 
 func NewSegment[V any](initialCapacity int) *segment[V] {
 	seg := &segment[V]{
 		innerArray: make([]*linkedList.LinkedList[Bucket[V]], initialCapacity),
 		lock:       sync.RWMutex{},
+		seed:       hash.MakeRandomSeed(),
 	}
 
 	return seg
@@ -35,17 +33,15 @@ func NewSegment[V any](initialCapacity int) *segment[V] {
 
 func (h *segment[V]) resize() {
 	h.lock.Lock()
+	h.seed = hash.MakeRandomSeed()
 	newCapacity := 2 * len(h.innerArray)
 	resizeArray := make([]*linkedList.LinkedList[Bucket[V]], newCapacity)
 
 	for index := range h.innerArray {
 		for h.innerArray[index] != nil && h.innerArray[index].GetSize() > 0 {
 			item := h.innerArray[index].RemoveFront()
-			hashCode, ok := item.GetHash()
-			if !ok {
-				hashCode, _ = hash.Calculate(item.Key)
-			}
-			newIdx := int64(hashCode % uint64(newCapacity))
+
+			newIdx := int64(hash.Get(h.seed, item.Key) % uint64(len(resizeArray)))
 			if resizeArray[newIdx] == nil {
 				resizeArray[newIdx] = linkedList.NewWithInitValue[Bucket[V]](item)
 			} else {
@@ -70,25 +66,26 @@ func (h *segment[V]) checkAndStartResize() {
 	h.resize()
 }
 
-func (h *segment[V]) PutSafe(bucket *Bucket[V]) {
+func (h *segment[V]) PutSafe(bucket *Bucket[V]) bool {
 	h.lock.Lock()
-	h.putBucket(bucket)
-	h.size++
+	exists := h.putBucket(bucket)
+	if !exists {
+		h.size++
+	}
 	h.lock.Unlock()
 
 	h.checkAndStartResize()
+
+	return exists
 }
 
-func (h *segment[V]) putBucket(bucket *Bucket[V]) {
-	hashCode, ok := bucket.GetHash()
-	if !ok {
-		hashCode, _ = hash.Calculate(bucket.Key)
-	}
+func (h *segment[V]) putBucket(bucket *Bucket[V]) (exists bool) {
+	hashCode := hash.Get(h.seed, bucket.Key)
 
 	index := int64(hashCode % uint64(len(h.innerArray)))
 	if h.innerArray[index] == nil {
 		h.innerArray[index] = linkedList.NewWithInitValue[Bucket[V]](bucket)
-		return
+		return false
 	}
 
 	element, found := h.innerArray[index].Find(func(current *Bucket[V]) bool {
@@ -97,16 +94,18 @@ func (h *segment[V]) putBucket(bucket *Bucket[V]) {
 
 	if found {
 		element.Value = bucket.Value
-	} else {
-		h.innerArray[index].AddFront(bucket)
+		return true
 	}
+
+	h.innerArray[index].AddFront(bucket)
+	return false
 }
 
-func (h *segment[V]) GetSafe(hash uint64, key string) (*Bucket[V], bool) {
+func (h *segment[V]) GetSafe(key string) (*Bucket[V], bool) {
 	h.lock.RLock()
 	defer h.lock.RUnlock()
 
-	index := int64(hash % uint64(len(h.innerArray)))
+	index := int64(hash.Get(h.seed, key) % uint64(len(h.innerArray)))
 	if h.innerArray[index] == nil {
 		return nil, false
 	}
@@ -121,11 +120,11 @@ func (h *segment[V]) GetSafe(hash uint64, key string) (*Bucket[V], bool) {
 	return element, true
 }
 
-func (h *segment[V]) RemoveSafe(hash uint64, key string) {
+func (h *segment[V]) RemoveSafe(key string) {
 	h.lock.Lock()
 	defer h.lock.Unlock()
 
-	index := int64(hash % uint64(len(h.innerArray)))
+	index := int64(hash.Get(h.seed, key) % uint64(len(h.innerArray)))
 	if h.innerArray[index] == nil {
 		return
 	}

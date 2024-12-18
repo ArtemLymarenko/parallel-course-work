@@ -13,7 +13,7 @@ import (
 func main() {
 	threadPool := threadpool.New(4, 1)
 
-	const resourceDir = "resources/"
+	const resourceDir = "resources/test/"
 	reader := fileReader.New()
 	invIndex := invertedIdx.New(resourceDir, reader)
 

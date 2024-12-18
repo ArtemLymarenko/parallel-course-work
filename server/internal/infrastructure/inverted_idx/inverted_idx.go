@@ -2,6 +2,8 @@ package invertedIdx
 
 import (
 	"fmt"
+	"log"
+	"os"
 	"parallel-course-work/pkg/set"
 	syncMap "parallel-course-work/pkg/sync_map"
 	"regexp"
@@ -20,8 +22,6 @@ type FileReader interface {
 }
 
 type InvertedIndex struct {
-	//storage     map[string]*set.Set[string]
-	//lock        sync.RWMutex
 	storage     SyncMap[*set.Set[string]]
 	commonWords *set.Set[string]
 	fileReader  FileReader
@@ -43,12 +43,12 @@ func New(resourceDir string, fileReader FileReader) *InvertedIndex {
 	}
 
 	invIndex := &InvertedIndex{
-		storage:     syncMap.NewSyncHashMap[*set.Set[string]](4, 32),
+		storage:     syncMap.NewSyncHashMap[*set.Set[string]](32, 16),
 		commonWords: commonWords,
 		fileReader:  fileReader,
 	}
 
-	invIndex.Build(resourceDir, []string{"0_2.txt", "1_3.txt", "2_3.txt", "3_4.txt"})
+	invIndex.Build(resourceDir)
 
 	return invIndex
 }
@@ -74,9 +74,14 @@ func (i *InvertedIndex) parseText(content string) []string {
 	return uniqueWords.ToSlice()
 }
 
-func (i *InvertedIndex) Build(resourceDir string, fileNames []string) {
-	for _, fileName := range fileNames {
-		if err := i.AddFile(resourceDir, fileName); err != nil {
+func (i *InvertedIndex) Build(resourceDir string) {
+	files, err := os.ReadDir(resourceDir)
+	if err != nil {
+		log.Fatalf("could not read the directory: %v", err)
+	}
+
+	for _, file := range files {
+		if err := i.AddFile(resourceDir, file.Name()); err != nil {
 			fmt.Println(err)
 			continue
 		}

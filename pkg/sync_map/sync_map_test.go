@@ -33,7 +33,7 @@ func TestSyncMap_Resize(t *testing.T) {
 	const iterations = 100
 	for iter := 0; iter < iterations; iter++ {
 		t.Run(fmt.Sprintf("Iteration #%d", iter+1), func(t *testing.T) {
-			initCap := 16
+			initCap := 120
 			expectedSize := int64(50000)
 			addElements := 50000
 

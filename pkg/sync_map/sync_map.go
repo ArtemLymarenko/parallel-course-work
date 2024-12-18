@@ -29,26 +29,27 @@ func NewSyncHashMap[V any](initialCapacity int, segmentsCount int) *syncMap[V] {
 	}
 }
 
-func (h *syncMap[V]) getHashWithIndex(key string) (uint64, int) {
-	hashCode, _ := hash.Calculate(key)
-	return hashCode, int(hashCode % uint64(h.totalSegments))
+func (h *syncMap[V]) getHashWithIndex(key string) int {
+	hashCode := hash.GetDefault(key)
+	return int(hashCode % uint64(h.totalSegments))
 }
 
 func (h *syncMap[V]) Put(key string, value V) {
-	hashCode, idx := h.getHashWithIndex(key)
 	bucket := &Bucket[V]{
 		Key:   key,
 		Value: value,
-		hash:  hashCode,
 	}
 
-	h.segments[idx].PutSafe(bucket)
-	h.size.Add(1)
+	idx := h.getHashWithIndex(key)
+	exists := h.segments[idx].PutSafe(bucket)
+	if !exists {
+		h.size.Add(1)
+	}
 }
 
 func (h *syncMap[V]) Get(key string) (res V, ok bool) {
-	hashCode, idx := h.getHashWithIndex(key)
-	bucket, ok := h.segments[idx].GetSafe(hashCode, key)
+	idx := h.getHashWithIndex(key)
+	bucket, ok := h.segments[idx].GetSafe(key)
 	if !ok {
 		return res, false
 	}
@@ -56,8 +57,8 @@ func (h *syncMap[V]) Get(key string) (res V, ok bool) {
 }
 
 func (h *syncMap[V]) Remove(key string) {
-	hashCode, idx := h.getHashWithIndex(key)
-	h.segments[idx].RemoveSafe(hashCode, key)
+	idx := h.getHashWithIndex(key)
+	h.segments[idx].RemoveSafe(key)
 	h.size.Add(-1)
 }
 
