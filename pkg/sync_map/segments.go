@@ -120,6 +120,25 @@ func (h *segment[V]) GetSafe(key string) (*Bucket[V], bool) {
 	return element, true
 }
 
+func (h *segment[V]) ModifySafe(key string, cb func(modify V) interface{}) (bool, interface{}) {
+	h.lock.Lock()
+	defer h.lock.Unlock()
+
+	index := int64(hash.Get(h.seed, key) % uint64(len(h.innerArray)))
+	if h.innerArray[index] == nil {
+		return false, nil
+	}
+
+	element, found := h.innerArray[index].Find(func(current *Bucket[V]) bool {
+		return current.Key == key
+	})
+	if found {
+		return true, cb(element.Value)
+	} else {
+		return false, nil
+	}
+}
+
 func (h *segment[V]) RemoveSafe(key string) {
 	h.lock.Lock()
 	defer h.lock.Unlock()

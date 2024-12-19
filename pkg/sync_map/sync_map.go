@@ -62,6 +62,11 @@ func (h *syncMap[V]) Remove(key string) {
 	h.size.Add(-1)
 }
 
+func (h *syncMap[V]) Modify(key string, cb func(modify V) interface{}) (bool, interface{}) {
+	idx := h.getHashWithIndex(key)
+	return h.segments[idx].ModifySafe(key, cb)
+}
+
 func (h *syncMap[V]) GetSize() int64 {
 	return h.size.Load()
 }

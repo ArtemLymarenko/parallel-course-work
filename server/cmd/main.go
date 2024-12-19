@@ -3,26 +3,37 @@ package main
 import (
 	"log"
 	"parallel-course-work/pkg/threadpool"
-	fileReader "parallel-course-work/server/internal/infrastructure/file_reader"
+	fileManager "parallel-course-work/server/internal/infrastructure/file_manager"
 	invertedIdx "parallel-course-work/server/internal/infrastructure/inverted_idx"
+	"parallel-course-work/server/internal/infrastructure/logger"
 	tcpServer "parallel-course-work/server/internal/infrastructure/tcp_server"
 	"parallel-course-work/server/internal/inteface/rest/handlers"
 	v1Router "parallel-course-work/server/internal/inteface/rest/router"
+	"parallel-course-work/server/internal/service"
+	"time"
 )
 
 func main() {
-	threadPool := threadpool.New(4, 1)
+	logs := logger.MustGet()
+	defer logs.Close()
+
+	threadPool := threadpool.New(4, 1, logs)
 
 	const resourceDir = "resources/test/"
-	reader := fileReader.New()
-	invIndex := invertedIdx.New(resourceDir, reader)
+	manager := fileManager.New(logs)
+	invIndex := invertedIdx.New(resourceDir, manager, logs)
 
-	invIndexHandlers := handlers.NewInvertedIndex(invIndex)
-	router := v1Router.MustInitRouter(invIndexHandlers)
+	period := 30 * time.Second
+	invIdxSchedulerService := service.NewSchedulerService(invIndex, manager, resourceDir, period, logs)
+	go invIdxSchedulerService.ScheduleAsync()
 
-	server := tcpServer.New(8080, threadPool, router)
-	err := server.Start()
-	if err != nil {
-		log.Fatal(err)
+	invIndexHandlers := handlers.NewInvertedIndex(invIndex, logs)
+	router := v1Router.MustInitRouter(invIndexHandlers, logs)
+
+	server := tcpServer.New(8080, threadPool, router, logs)
+
+	if err := server.Start(); err != nil {
+		log.Println("Server stopped with error:", err)
 	}
+
 }

@@ -31,6 +31,10 @@ type Router interface {
 
 const AliveTimeout = 2 * time.Second
 
+type Logger interface {
+	Log(...interface{})
+}
+
 type Server struct {
 	port           int
 	conn           net.Listener
@@ -38,15 +42,17 @@ type Server struct {
 	router         Router
 	shutdownSignal chan struct{}
 	taskIds        atomic.Int64
+	logger         Logger
 }
 
-func New(port int, threadPool ThreadPool, router Router) *Server {
+func New(port int, threadPool ThreadPool, router Router, logger Logger) *Server {
 	return &Server{
 		port:           port,
 		threadPool:     threadPool,
 		router:         router,
 		shutdownSignal: make(chan struct{}),
 		taskIds:        atomic.Int64{},
+		logger:         logger,
 	}
 }
 
@@ -62,17 +68,17 @@ func (server *Server) Start() error {
 	defer conn.Close()
 
 	server.conn = conn
-	log.Printf("Server started on port: %v\n", server.port)
 
 	wg := sync.WaitGroup{}
 	wg.Add(1)
 	go server.gracefulShutDown(&wg)
 
 	server.threadPool.MustRun()
+	//log.Printf("Server started on port: %v\n", server.port)
+	server.logger.Log("Server started on port:", server.port)
+
 	server.acceptConnections()
-
 	wg.Wait()
-
 	return nil
 }
 
@@ -83,7 +89,8 @@ func (server *Server) acceptConnections() {
 	for {
 		select {
 		case <-server.shutdownSignal:
-			log.Println("Shutting down acceptConnections...")
+			//log.Println("Shutting down acceptConnections...")
+			server.logger.Log("Shutting down acceptConnections...")
 			return
 		default:
 			conn, err := server.conn.Accept()
@@ -91,10 +98,14 @@ func (server *Server) acceptConnections() {
 				continue
 			}
 
+			//log.Printf("client connection [%v] opened\n", connIdx)
 			connIdx := idx.Add(1)
-			log.Printf("client connection [%v] opened\n", connIdx)
+			msg := fmt.Sprintf("client connection [%v] opened", connIdx)
+			server.logger.Log(msg)
 			if err := server.handleConnections(conn, connIdx); err != nil {
-				log.Printf("error happened %v\n", err)
+				//log.Printf("error happened %v\n", err)
+				msg := fmt.Sprintf("error happened %v", err)
+				server.logger.Log(msg)
 			}
 		}
 	}
@@ -115,15 +126,22 @@ func (server *Server) handleConnections(clientConn net.Conn, connIdx int64) erro
 		defer func() {
 			if !request.ConnectionAlive {
 				if err = clientConn.Close(); err != nil {
-					log.Printf("error occurred: %v\n", err)
+					//log.Printf("error occurred: %v\n", err)
+					msg := fmt.Sprintf("error occurred: %v", err)
+					server.logger.Log(msg)
 				}
-				log.Printf("client [%v] disconnected\n", connIdx)
+				//log.Printf("client [%v] disconnected\n", connIdx)
+				msg := fmt.Sprintf("client [%v] disconnected", connIdx)
+				server.logger.Log(msg)
 			}
 		}()
 		return server.router.Handle(request, clientConn)
 	})
 
-	log.Printf("Request: method: %v - path: %v\n", request.RequestMeta.Method, request.RequestMeta.Path)
+	//log.Printf("Request: method: %v - path: %v\n", request.RequestMeta.Method, request.RequestMeta.Path)
+	msg := fmt.Sprintf("Request: method: %v - path: %v", request.RequestMeta.Method, request.RequestMeta.Path)
+	server.logger.Log(msg)
+
 	err = server.threadPool.AddTask(task)
 	if err != nil {
 		return err
@@ -133,7 +151,9 @@ func (server *Server) handleConnections(clientConn net.Conn, connIdx int64) erro
 		go func() {
 			err = server.handleConnectionAlive(clientConn, connIdx, AliveTimeout)
 			if err != nil {
-				log.Printf("error occurred: %v\n", err)
+				//log.Printf("error occurred: %v\n", err)
+				msg := fmt.Sprintf("error occurred: %v", err)
+				server.logger.Log(msg)
 			}
 		}()
 	}
@@ -143,14 +163,19 @@ func (server *Server) handleConnections(clientConn net.Conn, connIdx int64) erro
 
 func (server *Server) handleSingleRequestAlive(clientConn net.Conn, connIdx int64, timeout time.Duration) error {
 	if err := clientConn.SetReadDeadline(time.Now().Add(timeout)); err != nil {
-		log.Printf("failed to set read deadline: %v\n", err)
+		//log.Printf("failed to set read deadline: %v\n", err)
+		msg := fmt.Sprintf("failed to set read deadline: %v", err)
+		server.logger.Log(msg)
 		return err
 	}
 
 	rawRequest, err := server.readMessage(clientConn)
 	if err != nil {
 		if netErr, ok := err.(net.Error); ok && netErr.Timeout() {
-			log.Printf("client [%v] timed out\n", connIdx)
+			//log.Printf("client [%v] timed out\n", connIdx)
+			msg := fmt.Sprintf("client [%v] timed out", connIdx)
+			server.logger.Log(msg)
+
 			_ = clientConn.SetReadDeadline(time.Time{})
 			return io.EOF
 		}
@@ -167,15 +192,22 @@ func (server *Server) handleSingleRequestAlive(clientConn net.Conn, connIdx int6
 		defer func() {
 			if !request.ConnectionAlive {
 				if err = clientConn.Close(); err != nil {
-					log.Printf("error occurred: %v\n", err)
+					//log.Printf("error occurred: %v\n", err)
+					msg := fmt.Sprintf("error occurred: %v", err)
+					server.logger.Log(msg)
 				}
-				log.Printf("client [%v] disconnected\n", connIdx)
+				//log.Printf("client [%v] disconnected\n", connIdx)
+				msg := fmt.Sprintf("client [%v] disconnected", connIdx)
+				server.logger.Log(msg)
+
 			}
 		}()
 		return server.router.Handle(request, clientConn)
 	})
 
-	log.Printf("Request: method: %v - path: %v\n", request.RequestMeta.Method, request.RequestMeta.Path)
+	//log.Printf("Request: method: %v - path: %v\n", request.RequestMeta.Method, request.RequestMeta.Path)
+	msg := fmt.Sprintf("Request: method: %v - path: %v", request.RequestMeta.Method, request.RequestMeta.Path)
+	server.logger.Log(msg)
 	err = server.threadPool.AddTask(task)
 	if err != nil {
 		return err
@@ -194,7 +226,9 @@ func (server *Server) handleConnectionAlive(
 		err := server.handleSingleRequestAlive(clientConn, connIdx, timeout)
 		if err != nil {
 			if errors.Is(err, io.EOF) {
-				log.Printf("client [%v] disconnected\n", connIdx)
+				//log.Printf("client [%v] disconnected\n", connIdx)
+				msg := fmt.Sprintf("client [%v] disconnected", connIdx)
+				server.logger.Log(msg)
 				break
 			}
 
@@ -259,11 +293,12 @@ func (server *Server) gracefulShutDown(wg *sync.WaitGroup) {
 	defer cancel()
 
 	if err := server.conn.Close(); err != nil {
-		log.Fatal(err)
+		log.Println(err)
 	}
 
 	server.threadPool.MustTerminate()
 
-	log.Printf("server stopped\n")
+	//log.Printf("server stopped\n")
+	server.logger.Log("server stopped")
 	wg.Done()
 }

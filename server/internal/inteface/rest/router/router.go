@@ -13,8 +13,12 @@ func HealthCheck(ctx *tcpRouter.RequestContext) error {
 	return ctx.ResponseJSON(tcpRouter.StatusOK, nil)
 }
 
-func MustInitRouter(invIndexHandlers InvertedIndexHandlers) *tcpRouter.Router {
-	router := tcpRouter.New()
+type Logger interface {
+	Log(...interface{})
+}
+
+func MustInitRouter(invIndexHandlers InvertedIndexHandlers, logger Logger) *tcpRouter.Router {
+	router := tcpRouter.New(logger)
 	router.AddRoute(tcpRouter.GET, "/health", HealthCheck)
 	router.AddRoute(tcpRouter.GET, "/index/search", invIndexHandlers.Search)
 	router.AddRoute(tcpRouter.GET, "/index/file", invIndexHandlers.GetFileContent)

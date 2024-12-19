@@ -2,12 +2,15 @@ package threadpool
 
 import (
 	"fmt"
+	"parallel-course-work/pkg/mock"
 	"testing"
 	"time"
 )
 
+var logs = mock.NewLogger()
+
 func TestThreadPoolTasks(t *testing.T) {
-	pool := New(1, 1)
+	pool := New(1, 1, logs)
 	task := NewTask(1, func() error {
 		time.Sleep(1 * time.Second)
 		return nil
@@ -40,7 +43,7 @@ func TestRunPrimaryAndSecondaryAtTime(t *testing.T) {
 
 	for i := 0; i < numIterations; i++ {
 		t.Run(fmt.Sprintf("Iteration-%d", i+1), func(t *testing.T) {
-			pool := New(1, 1)
+			pool := New(1, 1, logs)
 
 			taskExecuted := false
 			task := NewTask(1, func() error {

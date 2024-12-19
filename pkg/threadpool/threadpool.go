@@ -2,6 +2,7 @@ package threadpool
 
 import (
 	"errors"
+	"fmt"
 	"log"
 	"parallel-course-work/pkg/priorityqueue"
 	"sync"
@@ -23,7 +24,13 @@ type SyncPrimitives struct {
 	wg              sync.WaitGroup
 }
 
+type Logger interface {
+	Log(...interface{})
+}
+
 type ThreadPool struct {
+	logger Logger
+
 	mainTaskQueue        TaskPriorityQueue
 	secondaryTaskQueue   TaskPriorityQueue
 	sync                 *SyncPrimitives
@@ -33,7 +40,7 @@ type ThreadPool struct {
 	isTerminated         bool
 }
 
-func New(mainThreadCount, secondaryThreadCount int) *ThreadPool {
+func New(mainThreadCount, secondaryThreadCount int, logger Logger) *ThreadPool {
 	compareFunc := func(a, b *Task) bool {
 		return a.CreatedAt.After(b.CreatedAt)
 	}
@@ -48,6 +55,7 @@ func New(mainThreadCount, secondaryThreadCount int) *ThreadPool {
 	sp.secondaryWaiter = sync.NewCond(&sp.commonLock)
 
 	return &ThreadPool{
+		logger:               logger,
 		mainThreadCount:      mainThreadCount,
 		secondaryThreadCount: secondaryThreadCount,
 		mainTaskQueue:        priorityqueue.New(compareFunc),
@@ -87,7 +95,8 @@ func (threadPool *ThreadPool) MustRun() {
 	}
 
 	threadPool.isInitialized = true
-	log.Printf("thread pool is running...\n")
+	//log.Printf("thread pool is running...\n")
+	threadPool.logger.Log("thread pool is running...")
 }
 
 func (threadPool *ThreadPool) MustTerminate() {
@@ -106,7 +115,8 @@ func (threadPool *ThreadPool) MustTerminate() {
 	threadPool.isInitialized = false
 	threadPool.isTerminated = true
 
-	log.Printf("threadPool terminated\n")
+	//log.Printf("threadPool terminated\n")
+	threadPool.logger.Log("threadPool terminated...")
 }
 
 func (threadPool *ThreadPool) AddTask(task *Task) error {
@@ -143,14 +153,18 @@ func (threadPool *ThreadPool) routineThread(isPrimary bool) {
 			threadPool.sync.commonLock.Unlock()
 		}
 
-		{
-			threadPool.sync.printLock.Lock()
-			if err != nil {
-				log.Printf("task [%v] failed with error: %v\n", task.Id, err.Error())
-			}
-			log.Printf("task [%v], finished in %v, by primary threads: %v\n", task.Id, timeTaken, isPrimary)
-			threadPool.sync.printLock.Unlock()
+		//threadPool.sync.printLock.Lock()
+		if err != nil {
+			//log.Printf("task [%v] failed with error: %v\n", task.Id, err.Error())
+			msg := fmt.Sprintf("task [%v] failed with error: %v", task.Id, err.Error())
+			threadPool.logger.Log(msg)
 		}
+
+		//log.Printf("task [%v], finished in %v, by primary threads: %v\n", task.Id, timeTaken, isPrimary)
+		//threadPool.sync.printLock.Unlock()
+
+		msg := fmt.Sprintf("task [%v], finished in %v, by primary threads: %v", task.Id, timeTaken, isPrimary)
+		threadPool.logger.Log(msg)
 	}
 }
 
@@ -183,7 +197,9 @@ func (threadPool *ThreadPool) getTaskFromQueue(isPrimary bool) *Task {
 
 		if task != nil && task.Status == IDLE {
 			_ = task.SetStatus(PROCESSING)
-			log.Printf("task [%v] was taken\n", task.Id)
+			//log.Printf("task [%v] was taken\n", task.Id)
+			msg := fmt.Sprintf("task [%v] was taken", task.Id)
+			threadPool.logger.Log(msg)
 			return task
 		}
 	}
@@ -198,7 +214,9 @@ func (threadPool *ThreadPool) removeOldTasks() {
 			threadPool.secondaryTaskQueue.Push(task)
 			task.SetMoved(true)
 
-			log.Printf("task [%v] was moved\n", task.Id)
+			//log.Printf("task [%v] was moved\n", task.Id)
+			msg := fmt.Sprintf("task [%v] was moved", task.Id)
+			threadPool.logger.Log(msg)
 			threadPool.sync.secondaryWaiter.Signal()
 		}
 	}

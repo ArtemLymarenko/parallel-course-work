@@ -3,6 +3,7 @@ package tcpRouter
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"log"
 	"net"
 )
@@ -11,13 +12,21 @@ var ErrRouteNotFound = errors.New("route not found")
 
 type HandlerFunc func(ctx *RequestContext) error
 
-type Router struct {
-	routes map[RequestMeta]HandlerFunc
+type Logger interface {
+	Log(...interface{})
 }
 
-func New() *Router {
+type Router struct {
+	routes map[RequestMeta]HandlerFunc
+	logger Logger
+}
+
+func New(logger Logger) *Router {
 	routes := make(map[RequestMeta]HandlerFunc)
-	return &Router{routes}
+	return &Router{
+		routes: routes,
+		logger: logger,
+	}
 }
 
 func (router *Router) AddRoute(method RequestMethod, path RequestPath, handlerFunc HandlerFunc) {
@@ -31,7 +40,10 @@ func (router *Router) AddRoute(method RequestMethod, path RequestPath, handlerFu
 
 	rm := RequestMeta{path, method}
 	router.routes[rm] = handlerFunc
-	log.Printf("Registered route - Method: %v, Path: %v\n", rm.Method, rm.Path)
+
+	//log.Printf("Registered route - Method: %v, Path: %v\n", rm.Method, rm.Path)
+	msg := fmt.Sprintf("Registered route - Method: %v, Path: %v", rm.Method, rm.Path)
+	router.logger.Log(msg)
 }
 
 func (router *Router) Handle(request *Request, conn net.Conn) error {
