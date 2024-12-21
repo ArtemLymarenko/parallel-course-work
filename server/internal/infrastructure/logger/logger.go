@@ -18,7 +18,7 @@ type logger struct {
 }
 
 func MustGet() *logger {
-	fl, err := NewFileLogger("logs/logs.txt", 20)
+	fl, err := NewFileLogger("resources/logs/logs.txt", 20)
 	if err != nil {
 		log.Fatal(err)
 	}

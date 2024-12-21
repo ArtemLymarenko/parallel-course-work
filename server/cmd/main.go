@@ -1,7 +1,6 @@
 package main
 
 import (
-	"log"
 	"parallel-course-work/pkg/threadpool"
 	fileManager "parallel-course-work/server/internal/infrastructure/file_manager"
 	invertedIdx "parallel-course-work/server/internal/infrastructure/inverted_idx"
@@ -20,20 +19,18 @@ func main() {
 	threadPool := threadpool.New(4, 1, logs)
 
 	const resourceDir = "resources/test/"
-	manager := fileManager.New(logs)
-	invIndex := invertedIdx.New(resourceDir, manager, logs)
+	fManager := fileManager.New(logs)
+	invIndex := invertedIdx.New(resourceDir, fManager, logs)
 
 	period := 30 * time.Second
-	invIdxSchedulerService := service.NewSchedulerService(invIndex, manager, resourceDir, period, logs)
+	invIdxSchedulerService := service.NewSchedulerService(invIndex, fManager, resourceDir, period, logs)
 	go invIdxSchedulerService.ScheduleAsync()
 
 	invIndexHandlers := handlers.NewInvertedIndex(invIndex, logs)
 	router := v1Router.MustInitRouter(invIndexHandlers, logs)
 
 	server := tcpServer.New(8080, threadPool, router, logs)
-
 	if err := server.Start(); err != nil {
-		log.Println("Server stopped with error:", err)
+		logs.Log("Server stopped with error:", err)
 	}
-
 }

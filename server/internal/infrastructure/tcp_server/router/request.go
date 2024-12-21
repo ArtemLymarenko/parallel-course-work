@@ -1,11 +1,20 @@
 package tcpRouter
 
-import "errors"
+import (
+	"encoding/json"
+	"errors"
+)
 
 var (
 	ErrInvalidRequestMethod = errors.New("invalid request method")
 	ErrInvalidRequestPath   = errors.New("invalid request path")
 )
+
+type Request struct {
+	RequestMeta     RequestMeta     `json:"meta"`
+	Body            json.RawMessage `json:"body,omitempty"`
+	ConnectionAlive bool            `json:"connectionAlive,omitempty"`
+}
 
 type RequestMeta struct {
 	Path   RequestPath   `json:"path"`

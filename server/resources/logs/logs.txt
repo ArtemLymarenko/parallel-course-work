@@ -1,0 +1,33 @@
+2024/12/21 14:39:51 Registered route - Method: GET, Path: /health
+2024/12/21 14:39:51 Registered route - Method: GET, Path: /index/search
+2024/12/21 14:39:51 Registered route - Method: GET, Path: /index/file
+2024/12/21 14:39:51 Registered route - Method: POST, Path: /index/file
+2024/12/21 14:39:51 Registered route - Method: DELETE, Path: /index/file
+2024/12/21 14:39:51 thread pool is running...
+2024/12/21 14:39:51 Server started on port:8080
+2024/12/21 14:40:08 client connection [1] opened
+2024/12/21 14:40:08 Request: method: GET - path: /index/search
+2024/12/21 14:40:08 task [1] was taken
+2024/12/21 14:40:08 InvertedIndex.Search: error parsing request body: body is empty
+2024/12/21 14:40:08 client [1] disconnected
+2024/12/21 14:40:08 task [1], finished in 506.4µs, by primary threads: true
+2024/12/21 14:40:22 inverted index was updated successfully at 2024-12-21 14:39:51.9906607 +0200 EET m=+4.649298701
+
+2024/12/21 14:40:22 successfully added files : 0
+
+2024/12/21 14:40:52 inverted index was updated successfully at 2024-12-21 14:40:22.002231 +0200 EET m=+34.660869001
+
+2024/12/21 14:40:52 successfully added files : 0
+
+2024/12/21 14:41:22 inverted index was updated successfully at 2024-12-21 14:40:52.0119666 +0200 EET m=+64.670604601
+
+2024/12/21 14:41:22 successfully added files : 0
+
+2024/12/21 14:41:28 client connection [2] opened
+2024/12/21 14:41:28 Request: method: GET - path: /index/search
+2024/12/21 14:41:28 task [2] was taken
+2024/12/21 14:41:28 client [2] disconnected
+2024/12/21 14:41:28 task [2], finished in 0s, by primary threads: true
+2024/12/21 14:41:47 Shutting down acceptConnections...
+2024/12/21 14:41:47 threadPool terminated...
+2024/12/21 14:41:47 server stopped

@@ -1,4 +1,4 @@
-package tcpRouter
+package tcpClient
 
 import "errors"
 
@@ -7,7 +7,7 @@ var ErrInvalidRequestStatus = errors.New("invalid request status")
 type ResponseStatus int
 
 const (
-	StatusOK ResponseStatus = iota + 1
+	StatusOK ResponseStatus = iota
 	StatusProcessing
 	StatusNotFound
 	StatusBadRequest
@@ -21,4 +21,19 @@ func (requestStatus ResponseStatus) Validate() error {
 	default:
 		return ErrInvalidRequestStatus
 	}
+}
+
+func (requestStatus ResponseStatus) String() string {
+	return [...]string{
+		"OK",
+		"Processing",
+		"Not Found",
+		"Bad Request",
+		"Internal Server Error",
+	}[requestStatus]
+}
+
+type Response struct {
+	Status ResponseStatus `json:"status"`
+	Body   any            `json:"body"`
 }

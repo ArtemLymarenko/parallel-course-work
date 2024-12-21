@@ -4,49 +4,20 @@ import (
 	"encoding/json"
 	"errors"
 	"net"
+	"parallel-course-work/pkg/streamer"
 	"reflect"
 )
 
-type Request struct {
-	RequestMeta     RequestMeta     `json:"meta"`
-	ConnectionAlive bool            `json:"connectionAlive"`
-	Body            json.RawMessage `json:"body,omitempty"`
-}
-
 type RequestContext struct {
-	Conn    net.Conn
 	Request *Request
+	Conn    net.Conn
 }
 
 func NewRequestContext(request *Request, conn net.Conn) *RequestContext {
 	return &RequestContext{
-		conn,
-		request,
+		Request: request,
+		Conn:    conn,
 	}
-}
-
-type Response struct {
-	Status ResponseStatus `json:"status"`
-	Body   any            `json:"body"`
-}
-
-func (requestCtx *RequestContext) ResponseJSON(status ResponseStatus, data any) error {
-	response := Response{
-		Status: status,
-		Body:   data,
-	}
-
-	jsonResponse, err := json.Marshal(response)
-	if err != nil {
-		return err
-	}
-
-	_, err = requestCtx.Conn.Write(jsonResponse)
-	if err != nil {
-		return err
-	}
-
-	return nil
 }
 
 func (requestCtx *RequestContext) ShouldParseBodyJSON(body any) error {
@@ -71,4 +42,19 @@ func isStructEmpty(s any) bool {
 	}
 
 	return true
+}
+
+func (requestCtx *RequestContext) ResponseJSON(status ResponseStatus, data any) error {
+	response := Response{
+		Status: status,
+		Body:   data,
+	}
+
+	jsonResponse, err := json.Marshal(response)
+	if err != nil {
+		return err
+	}
+
+	err = streamer.WriteBuff(requestCtx.Conn, 2048, jsonResponse)
+	return err
 }

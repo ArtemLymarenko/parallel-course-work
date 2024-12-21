@@ -1,7 +1,6 @@
 package tcpServer
 
 import (
-	"bytes"
 	"context"
 	"errors"
 	"fmt"
@@ -10,6 +9,7 @@ import (
 	"net"
 	"os"
 	"os/signal"
+	"parallel-course-work/pkg/streamer"
 	"parallel-course-work/pkg/threadpool"
 	tcpRouter "parallel-course-work/server/internal/infrastructure/tcp_server/router"
 	"sync"
@@ -112,7 +112,7 @@ func (server *Server) acceptConnections() {
 }
 
 func (server *Server) handleConnections(clientConn net.Conn, connIdx int64) error {
-	rawRequest, err := server.readMessage(clientConn)
+	rawRequest, err := streamer.ReadBuff(clientConn)
 	if err != nil {
 		return err
 	}
@@ -169,7 +169,7 @@ func (server *Server) handleSingleRequestAlive(clientConn net.Conn, connIdx int6
 		return err
 	}
 
-	rawRequest, err := server.readMessage(clientConn)
+	rawRequest, err := streamer.ReadBuff(clientConn)
 	if err != nil {
 		if netErr, ok := err.(net.Error); ok && netErr.Timeout() {
 			//log.Printf("client [%v] timed out\n", connIdx)
@@ -237,50 +237,6 @@ func (server *Server) handleConnectionAlive(
 	}
 
 	return nil
-}
-
-func (server *Server) readMessage(clientConn net.Conn) ([]byte, error) {
-	lengthBuffer := make([]byte, 4)
-	_, err := clientConn.Read(lengthBuffer)
-	if err != nil {
-		if netErr, ok := err.(net.Error); ok {
-			if netErr.Timeout() {
-				return nil, netErr
-			}
-		}
-
-		return nil, err
-	}
-	messageLength := int(lengthBuffer[0])<<24 | int(lengthBuffer[1])<<16 | int(lengthBuffer[2])<<8 | int(lengthBuffer[3])
-
-	var (
-		buffer      bytes.Buffer
-		totalLength int
-	)
-
-	for {
-		chunk := make([]byte, 2048)
-		n, err := clientConn.Read(chunk)
-		if err != nil {
-			if errors.Is(err, io.EOF) {
-				return nil, err
-			}
-
-			if netErr, ok := err.(net.Error); ok && netErr.Timeout() {
-				return nil, netErr
-			}
-
-			return nil, fmt.Errorf("error reading: %v", err)
-		}
-
-		buffer.Write(chunk[:n])
-		totalLength += n
-		if totalLength == messageLength {
-			break
-		}
-	}
-
-	return buffer.Bytes(), nil
 }
 
 func (server *Server) gracefulShutDown(wg *sync.WaitGroup) {
