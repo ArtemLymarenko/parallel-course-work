@@ -17,8 +17,8 @@ type logger struct {
 	lock       sync.Mutex
 }
 
-func MustGet() *logger {
-	fl, err := NewFileLogger("resources/logs/logs.txt", 20)
+func MustGet(path string) *logger {
+	fl, err := NewFileLogger(path, 20)
 	if err != nil {
 		log.Fatal(err)
 	}

@@ -9,7 +9,7 @@ import (
 
 type Bucket[V any] struct {
 	Key   string
-	Value V
+	Value *V
 }
 
 const maxLoadFactor float64 = 0.9
@@ -91,7 +91,6 @@ func (h *segment[V]) putBucket(bucket *Bucket[V]) (exists bool) {
 	element, found := h.innerArray[index].Find(func(current *Bucket[V]) bool {
 		return current.Key == bucket.Key
 	})
-
 	if found {
 		element.Value = bucket.Value
 		return true
@@ -120,22 +119,32 @@ func (h *segment[V]) GetSafe(key string) (*Bucket[V], bool) {
 	return element, true
 }
 
-func (h *segment[V]) ModifySafe(key string, cb func(modify V) interface{}) (bool, interface{}) {
+// ModifySafe changes existing value of map using callback function
+// but if after the modification value is nil then the entire bucket will be deleted
+func (h *segment[V]) ModifySafe(key string, cb func(modify *V) *V) (modified bool, removed bool) {
 	h.lock.Lock()
 	defer h.lock.Unlock()
 
 	index := int64(hash.Get(h.seed, key) % uint64(len(h.innerArray)))
 	if h.innerArray[index] == nil {
-		return false, nil
+		return false, false
 	}
 
 	element, found := h.innerArray[index].Find(func(current *Bucket[V]) bool {
 		return current.Key == key
 	})
 	if found {
-		return true, cb(element.Value)
+		element.Value = cb(element.Value)
+		if element.Value == nil {
+			h.innerArray[index].Remove(func(current *Bucket[V]) bool {
+				return current.Key == key
+			})
+			h.size--
+			return true, true
+		}
+		return true, false
 	} else {
-		return false, nil
+		return false, false
 	}
 }
 

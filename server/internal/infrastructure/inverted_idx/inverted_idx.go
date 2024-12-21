@@ -1,22 +1,14 @@
 package invertedIdx
 
 import (
+	"errors"
 	"log"
 	"os"
 	"parallel-course-work/pkg/set"
-	syncMap "parallel-course-work/pkg/sync_map"
 	"regexp"
 	"strings"
 	"sync"
 )
-
-type SyncMap[V any] interface {
-	Put(string, V)
-	Get(string) (V, bool)
-	Remove(string)
-	GetSize() int64
-	Modify(key string, cb func(modify V) interface{}) (bool, interface{})
-}
 
 type FileManager interface {
 	Read(filePath string) ([]byte, error)
@@ -27,7 +19,7 @@ type Logger interface {
 }
 
 type InvertedIndex struct {
-	storage        SyncMap[*set.Set[string]]
+	storage        *syncMap
 	processedFiles *set.Set[string]
 	processedLock  *sync.RWMutex
 	commonWords    *set.Set[string]
@@ -35,7 +27,7 @@ type InvertedIndex struct {
 	logger         Logger
 }
 
-func New(resourceDir string, fileManager FileManager, logger Logger) *InvertedIndex {
+func New(fileManager FileManager, logger Logger) *InvertedIndex {
 	commonWords := set.NewSet[string]()
 	words := []string{
 		"the", "be", "to", "of", "and", "a", "in", "that", "have", "i",
@@ -51,15 +43,13 @@ func New(resourceDir string, fileManager FileManager, logger Logger) *InvertedIn
 	}
 
 	invIndex := &InvertedIndex{
-		storage:        syncMap.NewSyncHashMap[*set.Set[string]](32, 16),
+		storage:        NewSyncHashMap(32, 16),
 		processedFiles: set.NewSet[string](),
 		commonWords:    commonWords,
 		fileManager:    fileManager,
 		processedLock:  &sync.RWMutex{},
 		logger:         logger,
 	}
-
-	invIndex.Build(resourceDir)
 
 	return invIndex
 }
@@ -113,20 +103,11 @@ func (i *InvertedIndex) AddFile(filePath string) error {
 
 	parsedFileContent := i.parseText(string(fileContent))
 	for _, word := range parsedFileContent {
-		modified, _ := i.storage.Modify(word, func(fileSet *set.Set[string]) interface{} {
-			fileSet.Add(filePath)
-			return nil
-		})
-		if !modified {
-			newSet := set.NewSet[string]()
-			newSet.Add(filePath)
-			i.storage.Put(word, newSet)
-		}
+		i.storage.Put(word, filePath)
 	}
 
 	i.processedLock.Lock()
 	defer i.processedLock.Unlock()
-
 	i.processedFiles.Add(filePath)
 	return nil
 }
@@ -155,6 +136,10 @@ func (i *InvertedIndex) GetFileContent(filePath string) ([]byte, error) {
 }
 
 func (i *InvertedIndex) RemoveFile(filePath string) error {
+	if !i.HasFileProcessed(filePath) {
+		return errors.New("nothing to remove")
+	}
+
 	fileContent, err := i.fileManager.Read(filePath)
 	if err != nil {
 		return err
@@ -162,16 +147,7 @@ func (i *InvertedIndex) RemoveFile(filePath string) error {
 
 	parsedFileContent := i.parseText(string(fileContent))
 	for _, word := range parsedFileContent {
-		modified, isSetEmpty := i.storage.Modify(word, func(fileSet *set.Set[string]) interface{} {
-			fileSet.Remove(filePath)
-			return fileSet.IsEmpty()
-		})
-
-		if modified {
-			if isEmpty, ok := isSetEmpty.(bool); ok && isEmpty {
-				i.storage.Remove(word)
-			}
-		}
+		i.storage.Remove(word, filePath)
 	}
 
 	i.processedLock.Lock()

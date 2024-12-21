@@ -13,18 +13,18 @@ import (
 )
 
 func main() {
-	logs := logger.MustGet()
+	logs := logger.MustGet("resources/logs/logs.txt")
 	defer logs.Close()
 
 	threadPool := threadpool.New(4, 1, logs)
 
-	const resourceDir = "resources/test/"
 	fManager := fileManager.New(logs)
-	invIndex := invertedIdx.New(resourceDir, fManager, logs)
+	invIndex := invertedIdx.New(fManager, logs)
 
-	period := 30 * time.Second
-	invIdxSchedulerService := service.NewSchedulerService(invIndex, fManager, resourceDir, period, logs)
-	go invIdxSchedulerService.ScheduleAsync()
+	const resourceDir = "resources/test/"
+	invIndex.Build(resourceDir)
+	invIdxSchedulerService := service.NewSchedulerService(invIndex, fManager, logs)
+	go invIdxSchedulerService.MonitorDirAsync(resourceDir, 30*time.Second)
 
 	invIndexHandlers := handlers.NewInvertedIndex(invIndex, logs)
 	router := v1Router.MustInitRouter(invIndexHandlers, logs)

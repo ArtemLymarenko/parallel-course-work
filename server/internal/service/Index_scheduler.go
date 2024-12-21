@@ -23,34 +23,27 @@ type Logger interface {
 type InvertedIndexScheduler struct {
 	invertedIdx InvertedIndex
 	fileManager FileManager
-	directory   string
-	period      time.Duration
 	logger      Logger
 }
 
 func NewSchedulerService(
 	invertedIdx InvertedIndex,
 	fileManager FileManager,
-	directory string,
-	period time.Duration,
 	logger Logger,
 ) *InvertedIndexScheduler {
 	return &InvertedIndexScheduler{
 		invertedIdx: invertedIdx,
 		fileManager: fileManager,
-		directory:   directory,
-		period:      period,
 		logger:      logger,
 	}
 }
 
-func (iis *InvertedIndexScheduler) ScheduleAsync() {
+func (iis *InvertedIndexScheduler) MonitorDirAsync(directory string, period time.Duration) {
 	for {
 		checkPoint := time.Now()
-		time.Sleep(iis.period)
-		files, err := iis.fileManager.GetFilesAfterTimeStamp(iis.directory, checkPoint)
+		time.Sleep(period)
+		files, err := iis.fileManager.GetFilesAfterTimeStamp(directory, checkPoint)
 		if err != nil {
-			//log.Println(err)
 			iis.logger.Log(err)
 			continue
 		}
@@ -58,7 +51,7 @@ func (iis *InvertedIndexScheduler) ScheduleAsync() {
 		addedFiles := 0
 		for _, filePath := range files {
 			if !iis.invertedIdx.HasFileProcessed(filePath) {
-				err := iis.invertedIdx.AddFile(iis.directory + filePath)
+				err := iis.invertedIdx.AddFile(directory + filePath)
 				if err != nil {
 					log.Println(err)
 					continue
@@ -67,11 +60,7 @@ func (iis *InvertedIndexScheduler) ScheduleAsync() {
 				}
 			}
 		}
-		//log.Printf("inverted index was updated successfully at %v\n", checkPoint)
-		msg := fmt.Sprintf("inverted index was updated successfully at %v\n", checkPoint)
-		iis.logger.Log(msg)
-		//log.Printf("successfully added files : %v\n", addedFiles)
-		msg = fmt.Sprintf("successfully added files : %v\n", addedFiles)
+		msg := fmt.Sprintf("inverted index was updated successfully. added files: %v", addedFiles)
 		iis.logger.Log(msg)
 	}
 }

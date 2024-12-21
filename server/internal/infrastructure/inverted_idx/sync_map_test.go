@@ -1,4 +1,4 @@
-package syncMap
+package invertedIdx
 
 import (
 	"fmt"
@@ -9,12 +9,12 @@ import (
 )
 
 func TestSyncMap_Put(t *testing.T) {
-	m := NewSyncHashMap[struct{}](3, 2)
+	m := NewSyncHashMap(3, 2)
 	go func() {
-		m.Put("keasdasdasdy", &struct{}{}) //Same hash
+		m.Put("keasdasdasdy", "1") //Same hash
 	}()
 	go func() {
-		m.Put("kasdfasdfeey", &struct{}{}) //Same hash
+		m.Put("kasdfasdfeey", "2") //Same hash
 	}()
 	time.Sleep(1 * time.Second)
 
@@ -37,13 +37,13 @@ func TestSyncMap_Resize(t *testing.T) {
 			expectedSize := int64(50000)
 			addElements := 50000
 
-			m := NewSyncHashMap[struct{}](initCap, 32)
+			m := NewSyncHashMap(initCap, 32)
 			wg := sync.WaitGroup{}
 			wg.Add(addElements)
 
 			for i := 0; i < addElements; i++ {
 				go func(i int) {
-					m.Put(strconv.Itoa(i), &struct{}{})
+					m.Put(strconv.Itoa(i), strconv.Itoa(i))
 					wg.Done()
 				}(i)
 			}
@@ -75,13 +75,13 @@ func TestSyncMap_Remove(t *testing.T) {
 	expectedSize := int64(50000)
 	addElements := 50000
 
-	m := NewSyncHashMap[struct{}](initCap, 32)
+	m := NewSyncHashMap(initCap, 32)
 	wg := sync.WaitGroup{}
 	wg.Add(addElements)
 
 	for i := 0; i < addElements; i++ {
 		go func(i int) {
-			m.Put(strconv.Itoa(i), &struct{}{})
+			m.Put(strconv.Itoa(i), strconv.Itoa(i))
 			wg.Done()
 		}(i)
 	}
@@ -89,7 +89,7 @@ func TestSyncMap_Remove(t *testing.T) {
 	wg.Wait()
 
 	for i := 0; i < addElements; i++ {
-		m.Remove(strconv.Itoa(i))
+		m.Remove(strconv.Itoa(i), strconv.Itoa(i))
 	}
 
 	if m.GetSize() != 0 {
