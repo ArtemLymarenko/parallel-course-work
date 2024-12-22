@@ -61,7 +61,7 @@ func (i *InvertedIndex) AddFile(ctx *tcpRouter.RequestContext) error {
 		errorResponse := dto.ErrorResponse{
 			Message: "could not parse request body",
 		}
-		//log.Printf("%v: error parsing request body: %v\n", op, err)
+
 		msg := fmt.Sprintf("%v: error parsing request body: %v", op, err)
 		i.logger.Log(msg)
 		return ctx.ResponseJSON(tcpRouter.StatusBadRequest, errorResponse)
@@ -72,7 +72,7 @@ func (i *InvertedIndex) AddFile(ctx *tcpRouter.RequestContext) error {
 		errorResponse := dto.ErrorResponse{
 			Message: "could not add file",
 		}
-		//log.Printf("%v: error adding file: %v\n", op, err)
+
 		msg := fmt.Sprintf("%v: error adding file: %v", op, err)
 		i.logger.Log(msg)
 		return ctx.ResponseJSON(tcpRouter.StatusInternalServerError, errorResponse)
@@ -90,7 +90,7 @@ func (i *InvertedIndex) GetFileContent(ctx *tcpRouter.RequestContext) error {
 		errorResponse := dto.ErrorResponse{
 			Message: "could not parse request body",
 		}
-		//log.Printf("%v: error parsing request body: %v\n", op, err)
+
 		msg := fmt.Sprintf("%v: error parsing request body: %v", op, err)
 		i.logger.Log(msg)
 		return ctx.ResponseJSON(tcpRouter.StatusBadRequest, errorResponse)
@@ -101,7 +101,7 @@ func (i *InvertedIndex) GetFileContent(ctx *tcpRouter.RequestContext) error {
 		errorResponse := dto.ErrorResponse{
 			Message: "could not find the file",
 		}
-		//log.Printf("%v: error finding the file: %v\n", op, err)
+
 		msg := fmt.Sprintf("%v: error finding the file: %v", op, err)
 		i.logger.Log(msg)
 		return ctx.ResponseJSON(tcpRouter.StatusNotFound, errorResponse)
@@ -122,7 +122,7 @@ func (i *InvertedIndex) RemoveFile(ctx *tcpRouter.RequestContext) error {
 		errorResponse := dto.ErrorResponse{
 			Message: "could not parse request body",
 		}
-		//log.Printf("%v: error parsing request body: %v\n", op, err)
+
 		msg := fmt.Sprintf("%v: error parsing request body: %v", op, err)
 		i.logger.Log(msg)
 		return ctx.ResponseJSON(tcpRouter.StatusBadRequest, errorResponse)
@@ -133,7 +133,7 @@ func (i *InvertedIndex) RemoveFile(ctx *tcpRouter.RequestContext) error {
 		errorResponse := dto.ErrorResponse{
 			Message: "could not remove the file",
 		}
-		//log.Printf("%v: error removing the file: %v\n", op, err)
+
 		msg := fmt.Sprintf("%v: error removing the file: %v", op, err)
 		i.logger.Log(msg)
 		return ctx.ResponseJSON(tcpRouter.StatusNotFound, errorResponse)

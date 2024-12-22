@@ -25,11 +25,13 @@ func main() {
 	mux.Handle("/styles/*", http.StripPrefix("/styles/", fs))
 
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		tmpl.Render(w, "index", struct{}{})
+		tmpl.Render(w, "index", map[string]interface{}{})
 	})
 
 	mux.HandleFunc("/search", handlers.Search(tmpl))
 	mux.HandleFunc("/download", handlers.Download(tmpl))
+	mux.HandleFunc("/add-file", handlers.AddFile(tmpl))
+	mux.HandleFunc("/remove-file", handlers.RemoveFile(tmpl))
 
 	handler := Logging(mux)
 

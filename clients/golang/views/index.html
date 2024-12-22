@@ -1,28 +1,79 @@
 {{ block "index" . }}
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Parallel Course Work Client</title>
-    <script src="https://unpkg.com/htmx.org/dist/htmx.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="./styles/styles.css">
-</head>
-    <body>
-        {{ template "form" . }}
-        <hr />
-        <div id="history-container" style="display: flex; flex-direction: column; gap: 20px; ">
-        </div>
-    </body>
-</html>
+    <html lang="en">
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Parallel Course Work Client</title>
+            <script src="https://unpkg.com/htmx.org/dist/htmx.js"></script>
+            <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+            <link rel="stylesheet" href="./styles/styles.css">
+        </head>
+        <body>
+            <div>
+                {{ template "add-remove-form" . }}
+            </div>
+            {{ template "search-form" . }}
+            <hr />
+            <div id="history-container" style="display: flex; flex-direction: column; gap: 20px; "></div>
+        </body>
+    </html>
 {{ end }}
 
-{{ block "form" . }}
+{{ block "add-remove-form" . }}
+    <form id="add-remove-form">
+        <label for="file-path">File Path:</label>
+        <input type="text"
+               id="file-path"
+               name="file-path"
+               placeholder="Enter file path..."
+               style="margin-right: 10px;" />
+
+        <button type="button"
+                class="upload-btn"
+                hx-post="/add-file"
+                hx-trigger="click"
+                hx-target="#status-message"
+                hx-swap="innerHTML" style="margin-right: 10px;">
+            Add File
+        </button>
+
+        <button type="button"
+                class="delete-btn"
+                hx-post="/remove-file"
+                hx-trigger="click"
+                hx-target="#status-message"
+                hx-swap="innerHTML" style="margin-right: 10px;">
+            Delete File
+        </button>
+
+        {{ template "status-message" .  }}
+    </form>
+
+    <script>
+        document.body.addEventListener("htmx:afterRequest", function(event) {
+            const form = document.getElementById('add-remove-form');
+            if (form) {
+                form.reset();
+            }
+        });
+    </script>
+{{ end }}
+
+{{ block "status-message" .  }}
+    <div id="status-message"
+         class="status-message"
+         style="margin: 20px 0px; padding: 0">
+        {{ .Status }}
+    </div>
+{{ end }}
+
+{{ block "search-form" . }}
     <form id="search-form" hx-post="/search" hx-target="#history-container" hx-swap="afterend" hx-trigger="submit">
         <label for="search">Search:</label>
         <input type="text" id="search" name="search" placeholder="Enter your search query..." />
         <button type="submit" class="search-btn" hx-trigger="submit,reset">Search for results</button>
     </form>
+
 
     <script>
         document.body.addEventListener("htmx:afterRequest", function(event) {

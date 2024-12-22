@@ -39,8 +39,19 @@ input[type="text"]:focus {
     box-shadow: 0 0 0 3px rgba(66, 99, 235, 0.1);
 }
 
-.search-btn {
+.search-btn, .upload-btn  {
     background-color: #4263eb;
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.delete-btn {
+    background-color: darkred;
     color: white;
     border: none;
     padding: 12px 24px;
