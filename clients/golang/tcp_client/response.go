@@ -1,6 +1,9 @@
 package tcpClient
 
-import "errors"
+import (
+	"encoding/json"
+	"errors"
+)
 
 var ErrInvalidRequestStatus = errors.New("invalid request status")
 
@@ -34,6 +37,6 @@ func (requestStatus ResponseStatus) String() string {
 }
 
 type Response struct {
-	Status ResponseStatus `json:"status"`
-	Body   any            `json:"body"`
+	Status ResponseStatus  `json:"status"`
+	Body   json.RawMessage `json:"body"`
 }

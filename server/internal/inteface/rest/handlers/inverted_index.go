@@ -38,7 +38,7 @@ func (i *InvertedIndex) Search(ctx *tcpRouter.RequestContext) error {
 		errorResponse := dto.ErrorResponse{
 			Message: "could not parse request body",
 		}
-		//log.Printf("%v: error parsing request body: %v\n", op, err)
+
 		msg := fmt.Sprintf("%v: error parsing request body: %v", op, err)
 		i.logger.Log(msg)
 		return ctx.ResponseJSON(tcpRouter.StatusBadRequest, errorResponse)

@@ -41,15 +41,14 @@ func ReadBuff(conn Connection) ([]byte, error) {
 	}
 
 	var buffer bytes.Buffer
-	chunk := make([]byte, chunkSize)
 	for i := 0; i < totalChunks; i++ {
+		chunk := make([]byte, chunkSize)
 		n, err := conn.Read(chunk)
 		if err != nil {
 			return nil, err
 		}
 
 		buffer.Write(chunk[:n])
-		chunk = chunk[:0]
 	}
 
 	return buffer.Bytes(), nil

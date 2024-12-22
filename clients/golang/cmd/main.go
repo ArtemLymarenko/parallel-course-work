@@ -1,31 +1,37 @@
 package main
 
 import (
-	"fmt"
-	tcpClient "parallel-course-work/clients/golang/tcp_client"
+	"log"
+	"net/http"
+	"parallel-course-work/clients/golang/handlers"
+	htmlRender "parallel-course-work/clients/golang/html_render"
+	"time"
 )
 
-type Dto struct {
-	Query string `json:"query"`
+func Logging(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
+		start := time.Now()
+		next.ServeHTTP(w, req)
+		log.Printf("%s %s %s", req.Method, req.RequestURI, time.Since(start))
+	})
 }
 
 func main() {
-	req := &tcpClient.Request{
-		RequestMeta: tcpClient.RequestMeta{
-			Path:   "/index/search",
-			Method: "GET",
-		},
-		Body: Dto{
-			Query: "Hello world",
-		},
-	}
+	mux := http.NewServeMux()
 
-	client := tcpClient.New(8080)
-	defer client.CloseConn()
+	tmpl := htmlRender.NewTemplates()
 
-	response, err := client.SendRequest(req)
-	if err != nil {
-		fmt.Println(err)
-	}
-	fmt.Println(response)
+	fs := http.FileServer(http.Dir("views/styles"))
+	mux.Handle("/styles/*", http.StripPrefix("/styles/", fs))
+
+	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		tmpl.Render(w, "index", struct{}{})
+	})
+
+	mux.HandleFunc("/search", handlers.Search(tmpl))
+	mux.HandleFunc("/download", handlers.Download(tmpl))
+
+	handler := Logging(mux)
+
+	log.Fatal(http.ListenAndServe(":3000", handler))
 }

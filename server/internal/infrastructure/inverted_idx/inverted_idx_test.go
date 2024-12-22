@@ -15,7 +15,7 @@ var logs = mock.NewLogger()
 func TestParseContent(t *testing.T) {
 	reader := fileManager.New(logs)
 	invIdx := New(reader, logs)
-	invIdx.Build("../../../resources/")
+	invIdx.Build("test_files/")
 	text := `Hello,<br /><br />World,  World,  World, iast's a<br /> beautiful "chopper! " "?,,,.. . right now the `
 	parseText := invIdx.parseText(text)
 
@@ -28,10 +28,19 @@ func TestParseContent(t *testing.T) {
 	}
 }
 
+func TestParseContent2(t *testing.T) {
+	reader := fileManager.New(logs)
+	invIdx := New(reader, logs)
+	invIdx.Build("test_files/")
+	text := `Another text`
+	search := invIdx.Search(text)
+	fmt.Println(search)
+}
+
 func TestInvertedIndexBuild(t *testing.T) {
 	reader := fileManager.New(logs)
 	invIdx := New(reader, logs)
-	invIdx.Build("../../../resources/")
+	invIdx.Build("test_files/")
 	if invIdx.storage.GetSize() == 0 {
 		t.Errorf("InvertedIndex storage is empty")
 	}
@@ -40,11 +49,11 @@ func TestInvertedIndexBuild(t *testing.T) {
 func TestInvertedIndexSearch(t *testing.T) {
 	reader := fileManager.New(logs)
 	invIdx := New(reader, logs)
-	const pref = "../../../resources/"
+	const pref = "test_files/"
 	invIdx.Build(pref)
 	files := invIdx.Search("always")
 	fmt.Println(files)
-	result1 := []string{pref + "0_2.txt", pref + "3_4.txt", pref + "555.txt"}
+	result1 := []string{pref + "0_2.txt", pref + "3_4.txt"}
 	for _, w := range files {
 		if !slices.Contains(result1, w) {
 			t.Errorf("Parsed text does not contain %s", w)

@@ -1,0 +1,76 @@
+{{ block "index" . }}
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Parallel Course Work Client</title>
+    <script src="https://unpkg.com/htmx.org/dist/htmx.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="./styles/styles.css">
+</head>
+    <body>
+        {{ template "form" . }}
+        <hr />
+        <div id="history-container" style="display: flex; flex-direction: column; gap: 20px; ">
+        </div>
+    </body>
+</html>
+{{ end }}
+
+{{ block "form" . }}
+    <form id="search-form" hx-post="/search" hx-target="#history-container" hx-swap="afterend" hx-trigger="submit">
+        <label for="search">Search:</label>
+        <input type="text" id="search" name="search" placeholder="Enter your search query..." />
+        <button type="submit" class="search-btn" hx-trigger="submit,reset">Search for results</button>
+    </form>
+
+    <script>
+        document.body.addEventListener("htmx:afterRequest", function(event) {
+            const form = document.getElementById('search-form');
+            if (form) {
+                form.reset();
+            }
+        });
+    </script>
+{{ end }}
+
+{{ block "history-item" . }}
+    <div class="history-item" style="border: 1px solid #ccc; padding: 10px; border-radius: 5px; margin-top: 20px;">
+        <div style="margin-left: 10px;">
+            <p style="margin-bottom: 5px;">
+                <strong>Request: </strong> {{ .Query }}
+            </p>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 10px; max-height: 600px; overflow-y: auto; ">
+            {{ if .Files }}
+                {{ range .Files }}
+                <div style="border: 1px solid #ddd; border-radius: 5px; margin-top: 5px;">
+                    <div class="file-block"  style="display: flex; justify-content: space-between">
+                        <p>
+                            <strong>FileName:</strong> <span>{{ . }}</span>
+                        </p>
+                        <button
+                                hx-get="/download?filename={{ . }}"
+                                hx-trigger="click"
+                                hx-target="#content-{{ . | safeID }}"
+                                hx-swap="innerHTML"
+                                class="download-btn"
+                        >
+                            Download
+                        </button>
+                    </div>
+                    <div id="content-{{ . | safeID }}" class="file-content"></div>
+                </div>
+            {{ end }}
+            {{ else }}
+                <p>No results found.</p>
+            {{ end }}
+        </div>
+    </div>
+{{ end }}
+
+{{ block "file-content" . }}
+    <div style="white-space: pre-wrap;">
+        {{ .FileContent }}
+    </div>
+{{ end }}

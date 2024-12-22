@@ -41,7 +41,6 @@ func (router *Router) AddRoute(method RequestMethod, path RequestPath, handlerFu
 	rm := RequestMeta{path, method}
 	router.routes[rm] = handlerFunc
 
-	//log.Printf("Registered route - Method: %v, Path: %v\n", rm.Method, rm.Path)
 	msg := fmt.Sprintf("Registered route - Method: %v, Path: %v", rm.Method, rm.Path)
 	router.logger.Log(msg)
 }

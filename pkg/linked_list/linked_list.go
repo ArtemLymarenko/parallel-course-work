@@ -1,20 +1,5 @@
 package linkedList
 
-import (
-	"fmt"
-)
-
-type ILinkedList[T any] interface {
-	AddFront(item *T)
-	AddBack(item *T)
-	Find(cb func(current *node[T]) bool) (*T, bool)
-	Remove(cb func(current *node[T]) bool) error
-	RemoveFront() *T
-	GetSize() int
-	PrintList()
-	Clear()
-}
-
 type node[T any] struct {
 	element  *T
 	nextNode *node[T]
@@ -130,15 +115,6 @@ func (list *LinkedList[T]) RemoveFront() *T {
 	}
 
 	return element
-}
-
-func (list *LinkedList[T]) PrintList() {
-	current := list.head
-	for current != nil {
-		fmt.Printf("%v ", current.element)
-		current = current.nextNode
-	}
-	fmt.Printf("\n")
 }
 
 func (list *LinkedList[T]) Clear() {

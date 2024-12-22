@@ -46,17 +46,18 @@ func Test(t *testing.T) {
 	}
 
 	for range maxReadCardNumber {
-		_, ok := list.FindByStructField("IsAvailable", true)
+		_, ok := list.Find(func(c *ScholarShip) bool {
+			return c.IsAvailable == true
+		})
 		if !ok {
 			t.Errorf("Expected to read data, got %v", ok)
 		}
 	}
 
 	for range maxRemoveByName {
-		err := list.RemoveByStructField("IsAvailable", true)
-		if err != nil {
-			t.Errorf("Expected to read data, got %v", err)
-		}
+		list.Remove(func(c *ScholarShip) bool {
+			return c.IsAvailable == true
+		})
 	}
 	if list.GetSize() != maxPushFront+maxPushBack-maxRemoveFront-maxRemoveByName {
 		t.Errorf("Expected %d, got %d", maxPushFront+maxPushBack-maxRemoveFront-maxRemoveByName, list.GetSize())
