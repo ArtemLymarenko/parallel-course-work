@@ -32,7 +32,7 @@ func Search(tmpl *htmlRender.Templates) func(w http.ResponseWriter, r *http.Requ
 		data, err := tcpClient.Fetch(req, 8080)
 		var response tcpClient.Response
 		err = json.Unmarshal(data, &response)
-		if err != nil || response.Status != tcpClient.StatusOK {
+		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
 			_, _ = w.Write([]byte(err.Error()))
 			return

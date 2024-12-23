@@ -74,43 +74,72 @@
         <button type="submit" class="search-btn" hx-trigger="submit,reset">Search for results</button>
     </form>
 
-
     <script>
-        document.body.addEventListener("htmx:afterRequest", function(event) {
+        document.body.addEventListener("htmx:afterRequest", function (event) {
             const form = document.getElementById('search-form');
             if (form) {
                 form.reset();
             }
         });
+        document.body.addEventListener("htmx:afterRequest", function (event) {
+            if (event.detail.elt && event.detail.elt.id !== "search-form") {
+                return
+            }
+
+            const historyItems = document.querySelectorAll(".history-item");
+            if (historyItems.length === 0) {
+                return
+            }
+
+            historyItems.forEach((historyItem, globalIndex) => {
+                const fileBlocks = historyItem.querySelectorAll(".file-block");
+                fileBlocks.forEach((fileBlock, fileIndex) => {
+                    const fileContent = fileBlock.nextElementSibling;
+                    if (fileContent && fileContent.classList.contains("file-content")) {
+
+                        const baseId = `content-${globalIndex}-${fileIndex}`;
+                        if (fileContent.getAttribute("id") !== baseId) {
+                            fileContent.setAttribute("id", baseId);
+
+                            const downloadButton = fileBlock.querySelector(".download-btn");
+                            if (downloadButton) {
+                                downloadButton.setAttribute("hx-target", `#${baseId}`);
+                            }
+                        }
+                    }
+                });
+            });
+        });
     </script>
 {{ end }}
 
 {{ block "history-item" . }}
-    <div class="history-item" style="border: 1px solid #ccc; padding: 10px; border-radius: 5px; margin-top: 20px;">
-        <div style="margin-left: 10px;">
-            <p style="margin-bottom: 5px;">
-                <strong>Request: </strong> {{ .Query }}
-            </p>
-        </div>
-        <div style="display: flex; flex-direction: column; gap: 10px; max-height: 600px; overflow-y: auto; ">
-            {{ if .Files }}
-                {{ range .Files }}
-                <div style="border: 1px solid #ddd; border-radius: 5px; margin-top: 5px;">
-                    <div class="file-block"  style="display: flex; justify-content: space-between">
-                        <p>
-                            <strong>FileName:</strong> <span>{{ . }}</span>
-                        </p>
-                        <button
+<div class="history-item" style="border: 1px solid #ccc; padding: 10px; border-radius: 5px; margin-top: 20px;">
+    <div style="margin-left: 10px;">
+        <p style="margin-bottom: 5px;">
+            <strong>Request: </strong> {{ .Query }}
+        </p>
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 10px; max-height: 600px; overflow-y: auto; ">
+        {{ if .Files }}
+        {{ range $index, $file := .Files }}
+        <div style="border: 1px solid #ddd; border-radius: 5px; margin-top: 5px;">
+            <div class="file-block" style="display: flex; justify-content: space-between">
+                <p>
+                    <strong>FileName:</strong> <span>{{ . }}</span>
+                </p>
+                <button
                                 hx-get="/download?filename={{ . }}"
                                 hx-trigger="click"
-                                hx-target="#content-{{ . | safeID }}"
+                                hx-target="#content-{{ $index }}"
                                 hx-swap="innerHTML"
                                 class="download-btn"
                         >
                             Download
                         </button>
                     </div>
-                    <div id="content-{{ . | safeID }}" class="file-content"></div>
+                    <div id="content-{{ $index }}" class="file-content"></div>
+<!--                            id="content-{{ . | safeID }}-{{ $index }}" -->
                 </div>
             {{ end }}
             {{ else }}

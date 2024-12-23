@@ -37,6 +37,17 @@ func TestParseContent2(t *testing.T) {
 	fmt.Println(search)
 }
 
+func TestAddFile(t *testing.T) {
+	reader := fileManager.New(logs)
+	invIdx := New(reader, logs)
+	err := invIdx.AddFile("C:/Users/Artem/Desktop/MyFile.txt")
+	if err != nil {
+		t.Error(err)
+	}
+	search := invIdx.Search("Привіт")
+	fmt.Println(search)
+}
+
 func TestInvertedIndexBuild(t *testing.T) {
 	reader := fileManager.New(logs)
 	invIdx := New(reader, logs)

@@ -5,6 +5,7 @@ import (
 	"errors"
 	"os"
 	"path"
+	"path/filepath"
 	"time"
 )
 
@@ -25,7 +26,7 @@ func New(logger Logger) *fileManager {
 }
 
 func (m *fileManager) Read(filePath string) ([]byte, error) {
-	file, err := os.Open(filePath)
+	file, err := os.Open(filepath.Clean(filePath))
 	if err != nil {
 		return nil, err
 	}

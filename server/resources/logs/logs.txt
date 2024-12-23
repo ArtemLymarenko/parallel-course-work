@@ -1,12 +1,369 @@
-2024/12/21 15:32:22 Registered route - Method: GET, Path: /health
-2024/12/21 15:32:22 Registered route - Method: GET, Path: /index/search
-2024/12/21 15:32:22 Registered route - Method: GET, Path: /index/file
-2024/12/21 15:32:22 Registered route - Method: POST, Path: /index/file
-2024/12/21 15:32:22 Registered route - Method: DELETE, Path: /index/file
-2024/12/21 15:32:22 thread pool is running...
-2024/12/21 15:32:22 Server started on port:8080
-2024/12/21 15:32:52 inverted index was updated successfully at 2024-12-21 15:32:22.7636595 +0200 EET m=+0.450045801
-2024/12/21 15:32:52 successfully added files : 0
-2024/12/21 15:33:03 Shutting down acceptConnections...
-2024/12/21 15:33:03 threadPool terminated...
-2024/12/21 15:33:03 server stopped
+2024/12/23 11:40:25 Registered route - Method: GET, Path: /health
+2024/12/23 11:40:25 Registered route - Method: GET, Path: /index/search
+2024/12/23 11:40:25 Registered route - Method: GET, Path: /index/file
+2024/12/23 11:40:25 Registered route - Method: POST, Path: /index/file
+2024/12/23 11:40:25 Registered route - Method: DELETE, Path: /index/file
+2024/12/23 11:40:25 thread pool is running...
+2024/12/23 11:40:25 Server started on port:8080
+2024/12/23 11:40:35 client connection [1] opened
+2024/12/23 11:40:35 Request: method: GET - path: /index/search
+2024/12/23 11:40:35 task [1] was taken
+2024/12/23 11:40:35 client [1] disconnected
+2024/12/23 11:40:35 task [1], finished in 527.2µs, by primary threads: true
+2024/12/23 11:40:55 inverted index was updated successfully. added files: 0
+2024/12/23 11:41:11 client connection [2] opened
+2024/12/23 11:41:11 Request: method: GET - path: /index/search
+2024/12/23 11:41:11 task [2] was taken
+2024/12/23 11:41:11 client [2] disconnected
+2024/12/23 11:41:11 task [2], finished in 0s, by primary threads: true
+2024/12/23 11:41:25 inverted index was updated successfully. added files: 0
+2024/12/23 11:41:40 client connection [3] opened
+2024/12/23 11:41:40 Request: method: GET - path: /index/file
+2024/12/23 11:41:40 task [3] was taken
+2024/12/23 11:41:40 client [3] disconnected
+2024/12/23 11:41:40 task [3], finished in 0s, by primary threads: true
+2024/12/23 11:41:55 inverted index was updated successfully. added files: 0
+2024/12/23 11:42:10 client connection [4] opened
+2024/12/23 11:42:10 Request: method: GET - path: /index/search
+2024/12/23 11:42:10 task [4] was taken
+2024/12/23 11:42:10 client [4] disconnected
+2024/12/23 11:42:10 task [4], finished in 518.7µs, by primary threads: true
+2024/12/23 11:42:25 inverted index was updated successfully. added files: 0
+2024/12/23 11:42:55 inverted index was updated successfully. added files: 0
+2024/12/23 11:43:25 inverted index was updated successfully. added files: 0
+2024/12/23 11:43:43 client connection [5] opened
+2024/12/23 11:43:43 Request: method: GET - path: /index/search
+2024/12/23 11:43:43 task [5] was taken
+2024/12/23 11:43:43 client [5] disconnected
+2024/12/23 11:43:43 task [5], finished in 527.5µs, by primary threads: true
+2024/12/23 11:43:55 inverted index was updated successfully. added files: 0
+2024/12/23 11:44:25 inverted index was updated successfully. added files: 0
+2024/12/23 11:44:29 client connection [6] opened
+2024/12/23 11:44:29 Request: method: GET - path: /index/search
+2024/12/23 11:44:29 task [6] was taken
+2024/12/23 11:44:29 client [6] disconnected
+2024/12/23 11:44:29 task [6], finished in 0s, by primary threads: true
+2024/12/23 11:44:55 inverted index was updated successfully. added files: 0
+2024/12/23 11:45:25 inverted index was updated successfully. added files: 0
+2024/12/23 11:45:55 inverted index was updated successfully. added files: 0
+2024/12/23 11:46:04 client connection [7] opened
+2024/12/23 11:46:04 Request: method: GET - path: /index/search
+2024/12/23 11:46:04 task [7] was taken
+2024/12/23 11:46:04 client [7] disconnected
+2024/12/23 11:46:04 task [7], finished in 0s, by primary threads: true
+2024/12/23 11:46:25 inverted index was updated successfully. added files: 0
+2024/12/23 11:46:55 inverted index was updated successfully. added files: 0
+2024/12/23 11:46:57 client connection [8] opened
+2024/12/23 11:46:57 Request: method: GET - path: /index/search
+2024/12/23 11:46:57 task [8] was taken
+2024/12/23 11:46:57 client [8] disconnected
+2024/12/23 11:46:57 task [8], finished in 0s, by primary threads: true
+2024/12/23 11:47:25 inverted index was updated successfully. added files: 0
+2024/12/23 11:47:55 inverted index was updated successfully. added files: 0
+2024/12/23 11:48:25 inverted index was updated successfully. added files: 0
+2024/12/23 11:48:55 inverted index was updated successfully. added files: 0
+2024/12/23 11:49:04 client connection [9] opened
+2024/12/23 11:49:04 Request: method: GET - path: /index/search
+2024/12/23 11:49:04 task [9] was taken
+2024/12/23 11:49:04 client [9] disconnected
+2024/12/23 11:49:04 task [9], finished in 529µs, by primary threads: true
+2024/12/23 11:49:16 client connection [10] opened
+2024/12/23 11:49:16 Request: method: POST - path: /index/file
+2024/12/23 11:49:16 task [10] was taken
+2024/12/23 11:49:16 InvertedIndex.AddFile: error parsing request body: body is empty
+2024/12/23 11:49:16 client [10] disconnected
+2024/12/23 11:49:16 task [10], finished in 527.7µs, by primary threads: true
+2024/12/23 11:49:25 inverted index was updated successfully. added files: 0
+2024/12/23 11:49:55 inverted index was updated successfully. added files: 0
+2024/12/23 11:50:25 inverted index was updated successfully. added files: 0
+2024/12/23 11:50:55 inverted index was updated successfully. added files: 0
+2024/12/23 11:51:25 inverted index was updated successfully. added files: 0
+2024/12/23 11:51:55 inverted index was updated successfully. added files: 0
+2024/12/23 11:52:25 inverted index was updated successfully. added files: 0
+2024/12/23 11:52:47 client connection [11] opened
+2024/12/23 11:52:47 Request: method: GET - path: /index/search
+2024/12/23 11:52:47 task [11] was taken
+2024/12/23 11:52:47 client [11] disconnected
+2024/12/23 11:52:47 task [11], finished in 0s, by primary threads: true
+2024/12/23 11:52:55 inverted index was updated successfully. added files: 0
+2024/12/23 11:53:02 client connection [12] opened
+2024/12/23 11:53:02 Request: method: POST - path: /index/file
+2024/12/23 11:53:02 task [12] was taken
+2024/12/23 11:53:02 InvertedIndex.AddFile: error parsing request body: body is empty
+2024/12/23 11:53:02 client [12] disconnected
+2024/12/23 11:53:02 task [12], finished in 0s, by primary threads: true
+2024/12/23 11:53:03 client connection [13] opened
+2024/12/23 11:53:03 Request: method: POST - path: /index/file
+2024/12/23 11:53:03 task [13] was taken
+2024/12/23 11:53:03 InvertedIndex.AddFile: error parsing request body: body is empty
+2024/12/23 11:53:03 client [13] disconnected
+2024/12/23 11:53:03 task [13], finished in 0s, by primary threads: true
+2024/12/23 11:53:04 client connection [14] opened
+2024/12/23 11:53:04 Request: method: POST - path: /index/file
+2024/12/23 11:53:04 task [14] was taken
+2024/12/23 11:53:04 InvertedIndex.AddFile: error parsing request body: body is empty
+2024/12/23 11:53:04 client [14] disconnected
+2024/12/23 11:53:04 task [14], finished in 0s, by primary threads: true
+2024/12/23 11:53:23 client connection [15] opened
+2024/12/23 11:53:23 Request: method: GET - path: /index/search
+2024/12/23 11:53:23 task [15] was taken
+2024/12/23 11:53:23 client [15] disconnected
+2024/12/23 11:53:23 task [15], finished in 0s, by primary threads: true
+2024/12/23 11:53:25 inverted index was updated successfully. added files: 0
+2024/12/23 11:53:55 inverted index was updated successfully. added files: 0
+2024/12/23 11:54:25 inverted index was updated successfully. added files: 0
+2024/12/23 11:54:55 inverted index was updated successfully. added files: 0
+2024/12/23 11:55:25 inverted index was updated successfully. added files: 0
+2024/12/23 11:55:55 inverted index was updated successfully. added files: 0
+2024/12/23 11:56:25 inverted index was updated successfully. added files: 0
+2024/12/23 11:56:26 client connection [16] opened
+2024/12/23 11:56:26 Request: method: GET - path: /index/search
+2024/12/23 11:56:26 task [16] was taken
+2024/12/23 11:56:26 client [16] disconnected
+2024/12/23 11:56:26 task [16], finished in 0s, by primary threads: true
+2024/12/23 11:56:55 inverted index was updated successfully. added files: 0
+2024/12/23 11:57:05 client connection [17] opened
+2024/12/23 11:57:05 Request: method: GET - path: /index/search
+2024/12/23 11:57:05 task [17] was taken
+2024/12/23 11:57:05 client [17] disconnected
+2024/12/23 11:57:05 task [17], finished in 0s, by primary threads: true
+2024/12/23 11:57:25 inverted index was updated successfully. added files: 0
+2024/12/23 11:57:55 inverted index was updated successfully. added files: 0
+2024/12/23 11:58:25 inverted index was updated successfully. added files: 0
+2024/12/23 11:58:55 inverted index was updated successfully. added files: 0
+2024/12/23 11:59:22 client connection [18] opened
+2024/12/23 11:59:22 Request: method: GET - path: /index/search
+2024/12/23 11:59:22 task [18] was taken
+2024/12/23 11:59:22 client [18] disconnected
+2024/12/23 11:59:22 task [18], finished in 0s, by primary threads: true
+2024/12/23 11:59:25 inverted index was updated successfully. added files: 0
+2024/12/23 11:59:34 client connection [19] opened
+2024/12/23 11:59:34 Request: method: GET - path: /index/search
+2024/12/23 11:59:34 task [19] was taken
+2024/12/23 11:59:34 client [19] disconnected
+2024/12/23 11:59:34 task [19], finished in 0s, by primary threads: true
+2024/12/23 11:59:55 inverted index was updated successfully. added files: 0
+2024/12/23 12:00:06 client connection [20] opened
+2024/12/23 12:00:06 Request: method: GET - path: /index/file
+2024/12/23 12:00:06 task [20] was taken
+2024/12/23 12:00:06 client [20] disconnected
+2024/12/23 12:00:06 task [20], finished in 0s, by primary threads: true
+2024/12/23 12:00:09 client connection [21] opened
+2024/12/23 12:00:09 Request: method: GET - path: /index/file
+2024/12/23 12:00:09 task [21] was taken
+2024/12/23 12:00:09 client [21] disconnected
+2024/12/23 12:00:09 task [21], finished in 0s, by primary threads: true
+2024/12/23 12:00:13 client connection [22] opened
+2024/12/23 12:00:13 Request: method: GET - path: /index/file
+2024/12/23 12:00:13 task [22] was taken
+2024/12/23 12:00:13 client [22] disconnected
+2024/12/23 12:00:13 task [22], finished in 535.9µs, by primary threads: true
+2024/12/23 12:00:18 client connection [23] opened
+2024/12/23 12:00:18 Request: method: GET - path: /index/file
+2024/12/23 12:00:18 task [23] was taken
+2024/12/23 12:00:18 client [23] disconnected
+2024/12/23 12:00:18 task [23], finished in 0s, by primary threads: true
+2024/12/23 12:00:22 client connection [24] opened
+2024/12/23 12:00:22 Request: method: GET - path: /index/search
+2024/12/23 12:00:22 task [24] was taken
+2024/12/23 12:00:22 client [24] disconnected
+2024/12/23 12:00:22 task [24], finished in 0s, by primary threads: true
+2024/12/23 12:00:25 inverted index was updated successfully. added files: 0
+2024/12/23 12:00:25 client connection [25] opened
+2024/12/23 12:00:25 Request: method: GET - path: /index/file
+2024/12/23 12:00:25 task [25] was taken
+2024/12/23 12:00:25 client [25] disconnected
+2024/12/23 12:00:25 task [25], finished in 0s, by primary threads: true
+2024/12/23 12:00:55 inverted index was updated successfully. added files: 0
+2024/12/23 12:01:25 inverted index was updated successfully. added files: 0
+2024/12/23 12:01:55 inverted index was updated successfully. added files: 0
+2024/12/23 12:02:19 client connection [26] opened
+2024/12/23 12:02:19 Request: method: GET - path: /index/search
+2024/12/23 12:02:19 task [26] was taken
+2024/12/23 12:02:19 InvertedIndex.Search: error parsing request body: body is empty
+2024/12/23 12:02:19 client [26] disconnected
+2024/12/23 12:02:19 task [26], finished in 0s, by primary threads: true
+2024/12/23 12:02:25 inverted index was updated successfully. added files: 0
+2024/12/23 12:02:27 client connection [27] opened
+2024/12/23 12:02:27 Request: method: POST - path: /index/file
+2024/12/23 12:02:27 task [27] was taken
+2024/12/23 12:02:27 InvertedIndex.AddFile: error parsing request body: body is empty
+2024/12/23 12:02:27 client [27] disconnected
+2024/12/23 12:02:27 task [27], finished in 0s, by primary threads: true
+2024/12/23 12:02:28 client connection [28] opened
+2024/12/23 12:02:28 Request: method: DELETE - path: /index/file
+2024/12/23 12:02:28 task [28] was taken
+2024/12/23 12:02:28 InvertedIndex.RemoveFile: error parsing request body: body is empty
+2024/12/23 12:02:28 client [28] disconnected
+2024/12/23 12:02:28 task [28], finished in 0s, by primary threads: true
+2024/12/23 12:02:29 client connection [29] opened
+2024/12/23 12:02:29 Request: method: POST - path: /index/file
+2024/12/23 12:02:29 task [29] was taken
+2024/12/23 12:02:29 InvertedIndex.AddFile: error parsing request body: body is empty
+2024/12/23 12:02:29 client [29] disconnected
+2024/12/23 12:02:29 task [29], finished in 0s, by primary threads: true
+2024/12/23 12:02:30 client connection [30] opened
+2024/12/23 12:02:30 Request: method: GET - path: /index/search
+2024/12/23 12:02:30 task [30] was taken
+2024/12/23 12:02:30 InvertedIndex.Search: error parsing request body: body is empty
+2024/12/23 12:02:30 client [30] disconnected
+2024/12/23 12:02:30 task [30], finished in 0s, by primary threads: true
+2024/12/23 12:02:30 client connection [31] opened
+2024/12/23 12:02:30 Request: method: GET - path: /index/search
+2024/12/23 12:02:30 task [31] was taken
+2024/12/23 12:02:30 InvertedIndex.Search: error parsing request body: body is empty
+2024/12/23 12:02:30 client [31] disconnected
+2024/12/23 12:02:30 task [31], finished in 524.2µs, by primary threads: true
+2024/12/23 12:02:43 client connection [32] opened
+2024/12/23 12:02:43 Request: method: GET - path: /index/search
+2024/12/23 12:02:43 task [32] was taken
+2024/12/23 12:02:43 client [32] disconnected
+2024/12/23 12:02:43 task [32], finished in 0s, by primary threads: true
+2024/12/23 12:02:55 inverted index was updated successfully. added files: 0
+2024/12/23 12:03:25 inverted index was updated successfully. added files: 0
+2024/12/23 12:03:52 client connection [33] opened
+2024/12/23 12:03:52 Request: method: GET - path: /index/search
+2024/12/23 12:03:52 task [33] was taken
+2024/12/23 12:03:52 InvertedIndex.Search: error parsing request body: body is empty
+2024/12/23 12:03:52 client [33] disconnected
+2024/12/23 12:03:52 task [33], finished in 525.4µs, by primary threads: true
+2024/12/23 12:03:52 client connection [34] opened
+2024/12/23 12:03:52 Request: method: GET - path: /index/search
+2024/12/23 12:03:52 task [34] was taken
+2024/12/23 12:03:52 InvertedIndex.Search: error parsing request body: body is empty
+2024/12/23 12:03:52 client [34] disconnected
+2024/12/23 12:03:52 task [34], finished in 0s, by primary threads: true
+2024/12/23 12:03:52 client connection [35] opened
+2024/12/23 12:03:52 Request: method: GET - path: /index/search
+2024/12/23 12:03:52 task [35] was taken
+2024/12/23 12:03:52 InvertedIndex.Search: error parsing request body: body is empty
+2024/12/23 12:03:52 client [35] disconnected
+2024/12/23 12:03:52 task [35], finished in 0s, by primary threads: true
+2024/12/23 12:03:54 client connection [36] opened
+2024/12/23 12:03:54 Request: method: POST - path: /index/file
+2024/12/23 12:03:54 task [36] was taken
+2024/12/23 12:03:54 InvertedIndex.AddFile: error parsing request body: body is empty
+2024/12/23 12:03:54 client [36] disconnected
+2024/12/23 12:03:54 task [36], finished in 0s, by primary threads: true
+2024/12/23 12:03:55 client connection [37] opened
+2024/12/23 12:03:55 Request: method: DELETE - path: /index/file
+2024/12/23 12:03:55 task [37] was taken
+2024/12/23 12:03:55 InvertedIndex.RemoveFile: error parsing request body: body is empty
+2024/12/23 12:03:55 client [37] disconnected
+2024/12/23 12:03:55 task [37], finished in 0s, by primary threads: true
+2024/12/23 12:03:55 inverted index was updated successfully. added files: 0
+2024/12/23 12:03:58 client connection [38] opened
+2024/12/23 12:03:58 Request: method: GET - path: /index/search
+2024/12/23 12:03:58 task [38] was taken
+2024/12/23 12:03:58 client [38] disconnected
+2024/12/23 12:03:58 task [38], finished in 0s, by primary threads: true
+2024/12/23 12:04:00 client connection [39] opened
+2024/12/23 12:04:00 Request: method: GET - path: /index/search
+2024/12/23 12:04:00 task [39] was taken
+2024/12/23 12:04:00 InvertedIndex.Search: error parsing request body: body is empty
+2024/12/23 12:04:00 client [39] disconnected
+2024/12/23 12:04:00 task [39], finished in 0s, by primary threads: true
+2024/12/23 12:04:00 client connection [40] opened
+2024/12/23 12:04:00 Request: method: GET - path: /index/search
+2024/12/23 12:04:00 task [40] was taken
+2024/12/23 12:04:00 InvertedIndex.Search: error parsing request body: body is empty
+2024/12/23 12:04:00 client [40] disconnected
+2024/12/23 12:04:00 task [40], finished in 0s, by primary threads: true
+2024/12/23 12:04:15 Shutting down acceptConnections...
+2024/12/23 12:04:15 threadPool terminated...
+2024/12/23 12:04:15 server stopped
+2024/12/23 12:04:23 Registered route - Method: GET, Path: /health
+2024/12/23 12:04:23 Registered route - Method: GET, Path: /index/search
+2024/12/23 12:04:23 Registered route - Method: GET, Path: /index/file
+2024/12/23 12:04:23 Registered route - Method: POST, Path: /index/file
+2024/12/23 12:04:23 Registered route - Method: DELETE, Path: /index/file
+2024/12/23 12:04:23 thread pool is running...
+2024/12/23 12:04:23 Server started on port:8080
+2024/12/23 12:04:29 client connection [1] opened
+2024/12/23 12:04:29 Request: method: GET - path: /index/search
+2024/12/23 12:04:29 task [1] was taken
+2024/12/23 12:04:29 InvertedIndex.Search: error parsing request body: body is empty
+2024/12/23 12:04:29 client [1] disconnected
+2024/12/23 12:04:29 task [1], finished in 0s, by primary threads: true
+2024/12/23 12:04:53 inverted index was updated successfully. added files: 0
+2024/12/23 12:05:23 inverted index was updated successfully. added files: 0
+2024/12/23 12:05:53 inverted index was updated successfully. added files: 0
+2024/12/23 12:06:23 inverted index was updated successfully. added files: 0
+2024/12/23 12:06:53 inverted index was updated successfully. added files: 0
+2024/12/23 12:06:55 Shutting down acceptConnections...
+2024/12/23 12:06:55 threadPool terminated...
+2024/12/23 12:06:55 server stopped
+2024/12/23 12:06:55 Registered route - Method: GET, Path: /health
+2024/12/23 12:06:55 Registered route - Method: GET, Path: /index/search
+2024/12/23 12:06:55 Registered route - Method: GET, Path: /index/file
+2024/12/23 12:06:55 Registered route - Method: POST, Path: /index/file
+2024/12/23 12:06:55 Registered route - Method: DELETE, Path: /index/file
+2024/12/23 12:06:55 thread pool is running...
+2024/12/23 12:06:55 Server started on port:8080
+2024/12/23 12:06:59 client connection [1] opened
+2024/12/23 12:06:59 Request: method: GET - path: /index/search
+2024/12/23 12:06:59 task [1] was taken
+2024/12/23 12:06:59 InvertedIndex.Search: error parsing request body: body is empty
+2024/12/23 12:06:59 client [1] disconnected
+2024/12/23 12:06:59 task [1], finished in 12.8µs, by primary threads: true
+2024/12/23 12:07:25 inverted index was updated successfully. added files: 0
+2024/12/23 12:07:28 Shutting down acceptConnections...
+2024/12/23 12:07:28 threadPool terminated...
+2024/12/23 12:07:28 server stopped
+2024/12/23 12:07:29 Registered route - Method: GET, Path: /health
+2024/12/23 12:07:29 Registered route - Method: GET, Path: /index/search
+2024/12/23 12:07:29 Registered route - Method: GET, Path: /index/file
+2024/12/23 12:07:29 Registered route - Method: POST, Path: /index/file
+2024/12/23 12:07:29 Registered route - Method: DELETE, Path: /index/file
+2024/12/23 12:07:29 thread pool is running...
+2024/12/23 12:07:29 Server started on port:8080
+2024/12/23 12:07:35 client connection [1] opened
+2024/12/23 12:07:35 Request: method: GET - path: /index/search
+2024/12/23 12:07:35 task [1] was taken
+2024/12/23 12:07:35 InvertedIndex.Search: error parsing request body: body is empty
+2024/12/23 12:07:35 client [1] disconnected
+2024/12/23 12:07:35 task [1], finished in 0s, by primary threads: true
+2024/12/23 12:07:35 client connection [2] opened
+2024/12/23 12:07:35 Request: method: GET - path: /index/search
+2024/12/23 12:07:35 task [2] was taken
+2024/12/23 12:07:35 InvertedIndex.Search: error parsing request body: body is empty
+2024/12/23 12:07:35 client [2] disconnected
+2024/12/23 12:07:35 task [2], finished in 0s, by primary threads: true
+2024/12/23 12:07:44 Shutting down acceptConnections...
+2024/12/23 12:07:44 threadPool terminated...
+2024/12/23 12:07:44 server stopped
+2024/12/23 12:07:45 Registered route - Method: GET, Path: /health
+2024/12/23 12:07:45 Registered route - Method: GET, Path: /index/search
+2024/12/23 12:07:45 Registered route - Method: GET, Path: /index/file
+2024/12/23 12:07:45 Registered route - Method: POST, Path: /index/file
+2024/12/23 12:07:45 Registered route - Method: DELETE, Path: /index/file
+2024/12/23 12:07:45 thread pool is running...
+2024/12/23 12:07:45 Server started on port:8080
+2024/12/23 12:07:51 client connection [1] opened
+2024/12/23 12:07:51 Request: method: GET - path: /index/search
+2024/12/23 12:07:51 task [1] was taken
+2024/12/23 12:07:51 InvertedIndex.Search: error parsing request body: body is empty
+2024/12/23 12:07:51 client [1] disconnected
+2024/12/23 12:07:51 task [1], finished in 0s, by primary threads: true
+2024/12/23 12:08:15 inverted index was updated successfully. added files: 0
+2024/12/23 12:08:21 client connection [2] opened
+2024/12/23 12:08:21 Request: method: GET - path: /index/search
+2024/12/23 12:08:21 task [2] was taken
+2024/12/23 12:08:21 InvertedIndex.Search: error parsing request body: body is empty
+2024/12/23 12:08:21 client [2] disconnected
+2024/12/23 12:08:21 task [2], finished in 0s, by primary threads: true
+2024/12/23 12:08:22 client connection [3] opened
+2024/12/23 12:08:22 Request: method: POST - path: /index/file
+2024/12/23 12:08:22 task [3] was taken
+2024/12/23 12:08:22 InvertedIndex.AddFile: error parsing request body: body is empty
+2024/12/23 12:08:22 client [3] disconnected
+2024/12/23 12:08:22 task [3], finished in 0s, by primary threads: true
+2024/12/23 12:08:22 client connection [4] opened
+2024/12/23 12:08:22 Request: method: DELETE - path: /index/file
+2024/12/23 12:08:22 task [4] was taken
+2024/12/23 12:08:22 InvertedIndex.RemoveFile: error parsing request body: body is empty
+2024/12/23 12:08:22 client [4] disconnected
+2024/12/23 12:08:22 task [4], finished in 0s, by primary threads: true
+2024/12/23 12:08:27 Shutting down acceptConnections...
+2024/12/23 12:08:27 threadPool terminated...
+2024/12/23 12:08:27 server stopped
