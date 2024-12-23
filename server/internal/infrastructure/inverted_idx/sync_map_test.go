@@ -78,7 +78,6 @@ func TestSyncMap_Remove(t *testing.T) {
 	m := NewSyncHashMap(initCap, 32)
 	wg := sync.WaitGroup{}
 	wg.Add(addElements)
-
 	for i := 0; i < addElements; i++ {
 		go func(i int) {
 			m.Put(strconv.Itoa(i), strconv.Itoa(i))
@@ -88,9 +87,15 @@ func TestSyncMap_Remove(t *testing.T) {
 
 	wg.Wait()
 
+	wg2 := sync.WaitGroup{}
+	wg2.Add(addElements)
 	for i := 0; i < addElements; i++ {
-		m.Remove(strconv.Itoa(i), strconv.Itoa(i))
+		go func(i int) {
+			m.Remove(strconv.Itoa(i), strconv.Itoa(i))
+			wg2.Done()
+		}(i)
 	}
+	wg2.Wait()
 
 	if m.GetSize() != 0 {
 		t.Errorf("expected size to be %d, got %d", expectedSize, m.GetSize())

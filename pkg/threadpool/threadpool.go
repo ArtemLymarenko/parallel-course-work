@@ -31,8 +31,8 @@ type Logger interface {
 type ThreadPool struct {
 	logger Logger
 
-	mainTaskQueue        TaskPriorityQueue
-	secondaryTaskQueue   TaskPriorityQueue
+	mainTaskQueue TaskPriorityQueue
+	//secondaryTaskQueue   TaskPriorityQueue
 	sync                 *SyncPrimitives
 	mainThreadCount      int
 	secondaryThreadCount int
@@ -59,10 +59,10 @@ func New(mainThreadCount, secondaryThreadCount int, logger Logger) *ThreadPool {
 		mainThreadCount:      mainThreadCount,
 		secondaryThreadCount: secondaryThreadCount,
 		mainTaskQueue:        priorityqueue.New(compareFunc),
-		secondaryTaskQueue:   priorityqueue.New(compareFunc),
-		sync:                 sp,
-		isInitialized:        false,
-		isTerminated:         false,
+		//secondaryTaskQueue:   priorityqueue.New(compareFunc),
+		sync:          sp,
+		isInitialized: false,
+		isTerminated:  false,
 	}
 }
 
@@ -89,13 +89,12 @@ func (threadPool *ThreadPool) MustRun() {
 		go threadPool.routineThread(true)
 	}
 
-	for range threadPool.secondaryThreadCount {
-		threadPool.sync.wg.Add(1)
-		go threadPool.routineThread(false)
-	}
+	//for range threadPool.secondaryThreadCount {
+	//	threadPool.sync.wg.Add(1)
+	//	go threadPool.routineThread(false)
+	//}
 
 	threadPool.isInitialized = true
-	//log.Printf("thread pool is running...\n")
 	threadPool.logger.Log("thread pool is running...")
 }
 
@@ -115,7 +114,6 @@ func (threadPool *ThreadPool) MustTerminate() {
 	threadPool.isInitialized = false
 	threadPool.isTerminated = true
 
-	//log.Printf("threadPool terminated\n")
 	threadPool.logger.Log("threadPool terminated...")
 }
 
@@ -138,7 +136,7 @@ func (threadPool *ThreadPool) routineThread(isPrimary bool) {
 
 	for threadPool.IsWorking() {
 		//Add cron job to observe main queue and move old tasks to secondary in separate thread.
-		threadPool.removeOldTasks()
+		//threadPool.removeOldTasks()
 
 		task := threadPool.getTaskFromQueue(isPrimary)
 		if task == nil {
@@ -168,19 +166,20 @@ func (threadPool *ThreadPool) routineThread(isPrimary bool) {
 	}
 }
 
-func (threadPool *ThreadPool) getQueueWithWaiter(isPrimary bool) (TaskPriorityQueue, *sync.Cond) {
-	threadPool.sync.commonLock.RLock()
-	defer threadPool.sync.commonLock.RUnlock()
-
-	if isPrimary {
-		return threadPool.mainTaskQueue, threadPool.sync.mainWaiter
-	}
-
-	return threadPool.secondaryTaskQueue, threadPool.sync.secondaryWaiter
-}
+//func (threadPool *ThreadPool) getQueueWithWaiter(isPrimary bool) (TaskPriorityQueue, *sync.Cond) {
+//	threadPool.sync.commonLock.RLock()
+//	defer threadPool.sync.commonLock.RUnlock()
+//
+//	if isPrimary {
+//		return threadPool.mainTaskQueue, threadPool.sync.mainWaiter
+//	}
+//
+//	return threadPool.secondaryTaskQueue, threadPool.sync.secondaryWaiter
+//}
 
 func (threadPool *ThreadPool) getTaskFromQueue(isPrimary bool) *Task {
-	queue, waiter := threadPool.getQueueWithWaiter(isPrimary)
+	//queue, waiter := threadPool.getQueueWithWaiter(isPrimary)
+	queue, waiter := threadPool.mainTaskQueue, threadPool.sync.mainWaiter
 
 	threadPool.sync.commonLock.Lock()
 	defer threadPool.sync.commonLock.Unlock()
@@ -197,7 +196,6 @@ func (threadPool *ThreadPool) getTaskFromQueue(isPrimary bool) *Task {
 
 		if task != nil && task.Status == IDLE {
 			_ = task.SetStatus(PROCESSING)
-			//log.Printf("task [%v] was taken\n", task.Id)
 			msg := fmt.Sprintf("task [%v] was taken", task.Id)
 			threadPool.logger.Log(msg)
 			return task
@@ -205,19 +203,19 @@ func (threadPool *ThreadPool) getTaskFromQueue(isPrimary bool) *Task {
 	}
 }
 
-func (threadPool *ThreadPool) removeOldTasks() {
-	threadPool.sync.commonLock.Lock()
-	defer threadPool.sync.commonLock.Unlock()
-
-	for _, task := range threadPool.mainTaskQueue.GetItems() {
-		if task.IsOld() {
-			threadPool.secondaryTaskQueue.Push(task)
-			task.SetMoved(true)
-
-			//log.Printf("task [%v] was moved\n", task.Id)
-			msg := fmt.Sprintf("task [%v] was moved", task.Id)
-			threadPool.logger.Log(msg)
-			threadPool.sync.secondaryWaiter.Signal()
-		}
-	}
-}
+//func (threadPool *ThreadPool) removeOldTasks() {
+//	threadPool.sync.commonLock.Lock()
+//	defer threadPool.sync.commonLock.Unlock()
+//
+//	for _, task := range threadPool.mainTaskQueue.GetItems() {
+//		if task.IsOld() {
+//			threadPool.secondaryTaskQueue.Push(task)
+//			task.SetMoved(true)
+//
+//			//log.Printf("task [%v] was moved\n", task.Id)
+//			msg := fmt.Sprintf("task [%v] was moved", task.Id)
+//			threadPool.logger.Log(msg)
+//			threadPool.sync.secondaryWaiter.Signal()
+//		}
+//	}
+//}

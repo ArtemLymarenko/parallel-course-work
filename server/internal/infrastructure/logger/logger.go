@@ -3,6 +3,7 @@ package logger
 import (
 	"fmt"
 	"log"
+	"parallel-course-work/server/internal/app"
 	"sync"
 	"time"
 )
@@ -15,16 +16,19 @@ type FileLogger interface {
 type logger struct {
 	fileLogger *fileLogger
 	lock       sync.Mutex
+	env        app.Env
 }
 
-func MustGet(path string) *logger {
+func MustGet(path string, env app.Env) *logger {
 	fl, err := NewFileLogger(path, 20)
-	if err != nil {
+	if err != nil || !env.Valid() {
 		log.Fatal(err)
 	}
+
 	return &logger{
 		fileLogger: fl,
 		lock:       sync.Mutex{},
+		env:        env,
 	}
 }
 
@@ -38,7 +42,9 @@ func (l *logger) Log(v ...interface{}) {
 	logMsg := fmt.Sprintf("%s %s", timestamp, msg)
 
 	log.Printf(msg)
-	l.fileLogger.LogUnsafe(logMsg)
+	if l.env.IsProduction() {
+		l.fileLogger.LogUnsafe(logMsg)
+	}
 }
 
 func (l *logger) Close() {

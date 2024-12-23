@@ -114,7 +114,7 @@ func (h *segment) GetSafe(key string) (*set.Set[string], bool) {
 		return nil, false
 	}
 
-	return element.Value, true
+	return element.Value.Copy(), true
 }
 
 func (h *segment) RemoveSetFieldSafe(key string, setField string) (bucketRemoved bool) {
@@ -132,14 +132,13 @@ func (h *segment) RemoveSetFieldSafe(key string, setField string) (bucketRemoved
 	})
 	if found {
 		element.Value.Remove(setField)
-	}
-
-	if element.Value.IsEmpty() {
-		h.innerArray[index].Remove(func(current *Bucket) bool {
-			return current.Key == key
-		})
-		h.size--
-		return true
+		if element.Value.IsEmpty() {
+			h.innerArray[index].Remove(func(current *Bucket) bool {
+				return current.Key == key
+			})
+			h.size--
+			return true
+		}
 	}
 
 	return false

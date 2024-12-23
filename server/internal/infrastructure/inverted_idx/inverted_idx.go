@@ -96,6 +96,10 @@ func (i *InvertedIndex) Build(resourceDir string) {
 }
 
 func (i *InvertedIndex) AddFile(filePath string) error {
+	if i.HasFileProcessed(filePath) {
+		return errors.New("file has already been added to index")
+	}
+
 	fileContent, err := i.fileManager.Read(filePath)
 	if err != nil {
 		return err

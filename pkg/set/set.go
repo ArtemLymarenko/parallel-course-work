@@ -36,3 +36,11 @@ func (set *Set[K]) ToSlice() []K {
 	}
 	return keys
 }
+
+func (set *Set[K]) Copy() *Set[K] {
+	copySet := NewSet[K]()
+	for key := range set.Keys {
+		copySet.Add(key)
+	}
+	return copySet
+}
