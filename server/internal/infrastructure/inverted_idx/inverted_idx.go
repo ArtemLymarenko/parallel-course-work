@@ -19,9 +19,9 @@ type Logger interface {
 }
 
 type InvertedIndex struct {
-	storage        *syncMap
+	storage        *SyncHashMap
 	processedFiles *set.Set[string]
-	processedLock  *sync.RWMutex
+	processedLock  sync.RWMutex
 	commonWords    *set.Set[string]
 	fileManager    FileManager
 	logger         Logger
@@ -43,11 +43,11 @@ func New(fileManager FileManager, logger Logger) *InvertedIndex {
 	}
 
 	invIndex := &InvertedIndex{
-		storage:        NewSyncHashMap(32, 16),
+		storage:        NewSyncHashMap(16),
 		processedFiles: set.NewSet[string](),
 		commonWords:    commonWords,
 		fileManager:    fileManager,
-		processedLock:  &sync.RWMutex{},
+		processedLock:  sync.RWMutex{},
 		logger:         logger,
 	}
 

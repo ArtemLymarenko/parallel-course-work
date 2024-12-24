@@ -62,7 +62,7 @@ class TcpLocustClient:
                     name=request_name,
                     response_time=response_time,
                     response_length=content_length,
-                    exception=None
+                    exception=None,
                 )
                 return response_data
         except Exception as e:

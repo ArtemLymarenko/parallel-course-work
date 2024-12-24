@@ -3,63 +3,84 @@ package invertedIdx
 import (
 	"parallel-course-work/pkg/hash"
 	"parallel-course-work/pkg/set"
-	"sync/atomic"
+	"sync"
 )
 
 const MaxSegments = 32
 
-type syncMap struct {
-	segments      []*segment
-	size          atomic.Int64
-	totalSegments int
+type SyncHashMap struct {
+	syncMap       []map[string]*set.Set[string]
+	locks         []sync.RWMutex
+	commonLock    sync.RWMutex
+	size          int
+	segmentsCount int
 }
 
-func NewSyncHashMap(initialCapacity int, segmentsCount int) *syncMap {
+func NewSyncHashMap(segmentsCount int) *SyncHashMap {
 	if segmentsCount > MaxSegments {
 		segmentsCount = MaxSegments
 	}
 
-	segments := make([]*segment, segmentsCount)
+	locks := make([]sync.RWMutex, segmentsCount)
+	sMap := make([]map[string]*set.Set[string], segmentsCount)
 	for i := 0; i < segmentsCount; i++ {
-		segments[i] = NewSegment(initialCapacity)
+		locks[i] = sync.RWMutex{}
+		sMap[i] = make(map[string]*set.Set[string])
 	}
 
-	return &syncMap{
-		segments:      segments,
-		totalSegments: segmentsCount,
+	return &SyncHashMap{
+		syncMap:       sMap,
+		locks:         locks,
+		commonLock:    sync.RWMutex{},
+		size:          0,
+		segmentsCount: segmentsCount,
 	}
 }
 
-func (h *syncMap) getHashWithIndex(key string) int {
+func (h *SyncHashMap) Put(key string, field string) {
 	hashCode := hash.GetDefault(key)
-	return int(hashCode % uint64(h.totalSegments))
+	idx := int(hashCode % uint64(h.segmentsCount))
+	h.locks[idx].Lock()
+	defer h.locks[idx].Unlock()
+	if fileSet, ok := h.syncMap[idx][key]; ok {
+		fileSet.Add(field)
+		return
+	}
+	newSet := set.NewSet[string]()
+	newSet.Add(field)
+	h.syncMap[idx][key] = newSet
 }
 
-func (h *syncMap) Put(key string, field string) {
-	idx := h.getHashWithIndex(key)
-	created := h.segments[idx].PutSetFieldOrCreateSafe(key, field)
-	if created {
-		h.size.Add(1)
+func (h *SyncHashMap) Get(key string) (*set.Set[string], bool) {
+	hashCode := hash.GetDefault(key)
+	idx := int(hashCode % uint64(h.segmentsCount))
+	h.locks[idx].RLock()
+	defer h.locks[idx].RUnlock()
+	if fileSet, ok := h.syncMap[idx][key]; ok {
+		return fileSet.Copy(), true
+	}
+	return nil, false
+}
+
+func (h *SyncHashMap) Remove(key string, field string) {
+	hashCode := hash.GetDefault(key)
+	idx := int(hashCode % uint64(h.segmentsCount))
+	h.locks[idx].Lock()
+	defer h.locks[idx].Unlock()
+	if fileSet, ok := h.syncMap[idx][key]; ok {
+		fileSet.Remove(field)
+		if fileSet.IsEmpty() {
+			delete(h.syncMap[idx], key)
+		}
 	}
 }
 
-func (h *syncMap) Get(key string) (*set.Set[string], bool) {
-	idx := h.getHashWithIndex(key)
-	result, ok := h.segments[idx].GetSafe(key)
-	if !ok {
-		return nil, false
+func (h *SyncHashMap) GetSize() int {
+	h.commonLock.RLock()
+	defer h.commonLock.RUnlock()
+	size := 0
+	for i, _ := range h.syncMap {
+		size += len(h.syncMap[i])
 	}
-	return result, true
-}
-
-func (h *syncMap) Remove(key string, field string) {
-	idx := h.getHashWithIndex(key)
-	bucketRemoved := h.segments[idx].RemoveSetFieldSafe(key, field)
-	if bucketRemoved {
-		h.size.Add(-1)
-	}
-}
-
-func (h *syncMap) GetSize() int64 {
-	return h.size.Load()
+	return size
 }
