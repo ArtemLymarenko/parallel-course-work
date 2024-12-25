@@ -7,13 +7,12 @@ import (
 )
 
 type InvertedIndex interface {
-	Build(dir string)
 	AddFile(filePath string) error
 	HasFileProcessed(filePath string) bool
 }
 
 type FileManager interface {
-	GetFilesAfterTimeStamp(dir string, after time.Time) ([]string, error)
+	GetFilesWithCond(dir string, cond func(fileName string) bool) ([]string, error)
 }
 
 type Logger interface {
@@ -40,9 +39,11 @@ func NewSchedulerService(
 
 func (iis *InvertedIndexScheduler) MonitorDirAsync(directory string, period time.Duration) {
 	for {
-		checkPoint := time.Now()
 		time.Sleep(period)
-		files, err := iis.fileManager.GetFilesAfterTimeStamp(directory, checkPoint)
+		files, err := iis.fileManager.GetFilesWithCond(directory, func(filePath string) bool {
+			return !iis.invertedIdx.HasFileProcessed(filePath)
+		})
+
 		if err != nil {
 			iis.logger.Log(err)
 			continue
@@ -50,14 +51,12 @@ func (iis *InvertedIndexScheduler) MonitorDirAsync(directory string, period time
 
 		addedFiles := 0
 		for _, filePath := range files {
-			if !iis.invertedIdx.HasFileProcessed(filePath) {
-				err := iis.invertedIdx.AddFile(directory + filePath)
-				if err != nil {
-					log.Println(err)
-					continue
-				} else {
-					addedFiles++
-				}
+			err := iis.invertedIdx.AddFile(filePath)
+			if err != nil {
+				log.Println(err)
+				continue
+			} else {
+				addedFiles++
 			}
 		}
 		msg := fmt.Sprintf("inverted index was updated successfully. added files: %v", addedFiles)

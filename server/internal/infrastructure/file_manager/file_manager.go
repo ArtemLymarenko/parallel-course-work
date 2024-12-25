@@ -6,7 +6,6 @@ import (
 	"os"
 	"path"
 	"path/filepath"
-	"time"
 )
 
 var ErrReadFile = errors.New("failed to read the file")
@@ -62,7 +61,10 @@ func (m *fileManager) Read(filePath string) ([]byte, error) {
 	return result, nil
 }
 
-func (m *fileManager) GetFilesAfterTimeStamp(dir string, afterTime time.Time) ([]string, error) {
+func (m *fileManager) GetFilesWithCond(
+	dir string,
+	cond func(fileName string) bool,
+) ([]string, error) {
 	directory, err := os.Open(dir)
 	if err != nil {
 		return nil, err
@@ -78,15 +80,45 @@ func (m *fileManager) GetFilesAfterTimeStamp(dir string, afterTime time.Time) ([
 	for _, file := range files {
 		if file.IsDir() {
 			subDir := path.Join(dir, file.Name())
-			subFiles, err := m.GetFilesAfterTimeStamp(subDir, afterTime)
+			subFiles, err := m.GetFilesWithCond(subDir, cond)
 			if err != nil {
 				return nil, err
 			}
 			newFiles = append(newFiles, subFiles...)
+		} else {
+			filePath := path.Join(dir, file.Name())
+			if cond(filePath) {
+				newFiles = append(newFiles, filePath)
+			}
 		}
+	}
 
-		if file.ModTime().After(afterTime) {
-			newFiles = append(newFiles, file.Name())
+	return newFiles, nil
+}
+
+func (m *fileManager) GetAllFiles(dir string) ([]string, error) {
+	directory, err := os.Open(dir)
+	if err != nil {
+		return nil, err
+	}
+	defer directory.Close()
+
+	files, err := directory.Readdir(-1)
+	if err != nil {
+		return nil, err
+	}
+
+	var newFiles []string
+	for _, file := range files {
+		if file.IsDir() {
+			subDir := path.Join(dir, file.Name())
+			subFiles, err := m.GetAllFiles(subDir)
+			if err != nil {
+				return nil, err
+			}
+			newFiles = append(newFiles, subFiles...)
+		} else {
+			newFiles = append(newFiles, path.Join(dir, file.Name()))
 		}
 	}
 
