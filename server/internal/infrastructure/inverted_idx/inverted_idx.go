@@ -3,7 +3,6 @@ package invertedIdx
 import (
 	"errors"
 	"log"
-	"os"
 	"parallel-course-work/pkg/set"
 	"regexp"
 	"strings"
@@ -12,6 +11,7 @@ import (
 
 type FileManager interface {
 	Read(filePath string) ([]byte, error)
+	GetAllFiles(dir string) ([]string, error)
 }
 
 type Logger interface {
@@ -75,20 +75,48 @@ func (i *InvertedIndex) parseText(content string) []string {
 	return uniqueWords.ToSlice()
 }
 
-func (i *InvertedIndex) Build(resourceDir string) {
-	files, err := os.ReadDir(resourceDir)
+func (i *InvertedIndex) Build(resourceDir string, threadCount int) {
+	if threadCount < 1 {
+		log.Fatalf("Thread count must be greater than zero")
+	}
+
+	filePaths, err := i.fileManager.GetAllFiles(resourceDir)
 	if err != nil {
 		log.Fatalf("could not read the directory: %v", err)
 	}
 
+	wg := sync.WaitGroup{}
+	wg.Add(threadCount)
+
+	totalChunks := len(filePaths) / threadCount
+	startIdx, endIdx := 0, 0
+	for threadIdx := range threadCount {
+		startIdx = threadIdx * totalChunks
+		if threadIdx == threadCount-1 {
+			endIdx = len(filePaths)
+		} else {
+			endIdx = totalChunks * (threadIdx + 1)
+		}
+
+		filePathsChunk := filePaths[startIdx:endIdx]
+		go func() {
+			i.BuildFiles(filePathsChunk)
+			wg.Done()
+		}()
+	}
+
+	wg.Wait()
+}
+
+func (i *InvertedIndex) BuildFiles(filePaths []string) {
 	idx := 0
-	processedFile := make([]string, len(files))
-	for _, file := range files {
-		if err = i.AddFile(resourceDir + file.Name()); err != nil {
+	processedFile := make([]string, len(filePaths))
+	for _, filePath := range filePaths {
+		if err := i.AddFile(filePath); err != nil {
 			i.logger.Log(err)
 			continue
 		}
-		processedFile[idx] = file.Name()
+		processedFile[idx] = filePath
 		idx++
 	}
 

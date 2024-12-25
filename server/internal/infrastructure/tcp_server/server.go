@@ -19,7 +19,7 @@ import (
 )
 
 type ThreadPool interface {
-	MustRun()
+	MustRun(threadCount int)
 	MustTerminate()
 	AddTask(task *threadpool.Task) error
 }
@@ -60,7 +60,7 @@ func (server *Server) getAddr() string {
 	return fmt.Sprintf(":%d", server.port)
 }
 
-func (server *Server) Start() error {
+func (server *Server) Start(threadsCount int) error {
 	conn, err := net.Listen("tcp", server.getAddr())
 	if err != nil {
 		return err
@@ -73,7 +73,7 @@ func (server *Server) Start() error {
 	wg.Add(1)
 	go server.gracefulShutDown(&wg)
 
-	server.threadPool.MustRun()
+	server.threadPool.MustRun(threadsCount)
 	server.logger.Log("Server started on port:", server.port)
 
 	server.acceptConnections()
