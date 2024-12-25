@@ -1,7 +1,9 @@
 package invertedIdx
 
 import (
+	"encoding/csv"
 	"fmt"
+	"os"
 	"parallel-course-work/pkg/mock"
 	fileManager "parallel-course-work/server/internal/infrastructure/file_manager"
 	"slices"
@@ -134,27 +136,47 @@ func TestInvertedIndex_Build(t *testing.T) {
 	}
 }
 
-func BenchmarkBuild(b *testing.B) {
-	resourceDir := "../../../resources/test/"
+func Test_Build_Multi(t *testing.T) {
+	resourceDir := "../../../resources/data/"
 
-	threadCounts := []int{1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048}
-	for _, threadCount := range threadCounts {
-		b.Run(
-			fmt.Sprintf("ThreadCount_%v", threadCount),
-			func(b *testing.B) {
-				reader := fileManager.New(logs)
-				invIdx := New(reader, logs)
+	file, err := os.Create("test_results.csv")
+	if err != nil {
+		t.Fatalf("Failed to create file: %v", err)
+	}
+	defer file.Close()
 
-				b.ResetTimer()
-				for i := 0; i < b.N; i++ {
-					invIdx.Build(resourceDir, threadCount)
-				}
-				b.StopTimer()
+	writer := csv.NewWriter(file)
+	defer writer.Flush()
 
-				nsPerOp := float64(b.Elapsed().Nanoseconds()) / float64(b.N)
-				msPerOp := nsPerOp / 1_000_000
-				b.ReportMetric(msPerOp, "ms/op")
-			},
-		)
+	err = writer.Write([]string{"threadCount", "ms"})
+	if err != nil {
+		t.Fatalf("Failed to write header to CSV: %v", err)
+	}
+
+	runTest := func(threadCount int) {
+		invIdx := New(fileManager.New(logs), logs)
+
+		start := time.Now()
+		invIdx.Build(resourceDir, threadCount)
+		elapsed := time.Since(start)
+
+		err := writer.Write([]string{
+			fmt.Sprintf("%v", threadCount),
+			fmt.Sprintf("%v", elapsed.Milliseconds()),
+		})
+		if err != nil {
+			t.Fatalf("Failed to write result to CSV: %v", err)
+		}
+
+		t.Logf("Elapsed for %v threads is %v ms\n", threadCount, elapsed.Milliseconds())
+	}
+
+	threadCount := 1
+	for threadCount < 1024 {
+		t.Run(fmt.Sprintf("threads_%v", threadCount), func(t *testing.T) {
+			t.Cleanup(func() {})
+			runTest(threadCount)
+			threadCount *= 2
+		})
 	}
 }

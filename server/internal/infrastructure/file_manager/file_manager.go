@@ -1,4 +1,4 @@
-package fileManager
+package filemanager
 
 import (
 	"bufio"

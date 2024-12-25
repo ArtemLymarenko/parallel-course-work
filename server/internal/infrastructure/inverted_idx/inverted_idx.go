@@ -43,7 +43,7 @@ func New(fileManager FileManager, logger Logger) *InvertedIndex {
 	}
 
 	invIndex := &InvertedIndex{
-		storage:        NewSyncHashMap(16),
+		storage:        NewSyncHashMap(32),
 		processedFiles: set.NewSet[string](),
 		commonWords:    commonWords,
 		fileManager:    fileManager,
@@ -206,14 +206,12 @@ func (i *InvertedIndex) Search(query string) []string {
 		}
 	}
 
-	result := make([]string, len(filesCount))
-	idx := 0
+	var result []string
 	for fileName, count := range filesCount {
 		if count == maxCount {
-			result[idx] = fileName
-			idx++
+			result = append(result, fileName)
 		}
 	}
 
-	return result[:idx]
+	return result
 }

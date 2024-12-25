@@ -3,7 +3,7 @@ package main
 import (
 	"parallel-course-work/pkg/threadpool"
 	"parallel-course-work/server/internal/app"
-	fileManager "parallel-course-work/server/internal/infrastructure/file_manager"
+	filemanager "parallel-course-work/server/internal/infrastructure/file_manager"
 	invertedIdx "parallel-course-work/server/internal/infrastructure/inverted_idx"
 	"parallel-course-work/server/internal/infrastructure/logger"
 	tcpServer "parallel-course-work/server/internal/infrastructure/tcp_server"
@@ -14,27 +14,28 @@ import (
 )
 
 func main() {
-	logs := logger.MustGet("resources/logs/logs.txt", app.EnvDev)
-	defer logs.Close()
-
 	//logs := mock.NewLogger()
-	threadPool := threadpool.New(logs)
 
-	fManager := fileManager.New(logs)
-	invIndex := invertedIdx.New(fManager, logs)
+	loggerService := logger.MustGet("resources/logs/logs.txt", app.EnvDev)
+	defer loggerService.Close()
 
-	const resourceDir = "resources/test/"
-	invIndex.Build(resourceDir, 4)
-	invIdxSchedulerService := service.NewSchedulerService(invIndex, fManager, logs)
+	fileManager := filemanager.New(loggerService)
+	invIndex := invertedIdx.New(fileManager, loggerService)
+
+	const resourceDir = "resources/data/"
+	invIndex.Build(resourceDir, 12)
+
+	invIdxSchedulerService := service.NewSchedulerService(invIndex, fileManager, loggerService)
 	go invIdxSchedulerService.MonitorDirAsync(resourceDir, 30*time.Second)
 
-	invIndexHandlers := handlers.NewInvertedIndex(invIndex, logs)
-	router := v1Router.MustInitRouter(invIndexHandlers, logs)
+	invIndexHandlers := handlers.NewInvertedIndex(invIndex, loggerService)
+	router := v1Router.MustInitRouter(invIndexHandlers, loggerService)
 
-	server := tcpServer.New(8080, threadPool, router, logs)
+	threadPool := threadpool.New(loggerService)
+	server := tcpServer.New(8080, threadPool, router, loggerService)
 
 	threads := 12
 	if err := server.Start(threads); err != nil {
-		logs.Log("Server stopped with error:", err)
+		loggerService.Log("Server stopped with error:", err)
 	}
 }
