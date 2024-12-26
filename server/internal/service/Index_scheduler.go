@@ -2,7 +2,6 @@ package service
 
 import (
 	"fmt"
-	"log"
 	"time"
 )
 
@@ -53,7 +52,7 @@ func (iis *InvertedIndexScheduler) MonitorDirAsync(directory string, period time
 		for _, filePath := range files {
 			err := iis.invertedIdx.AddFile(filePath)
 			if err != nil {
-				log.Println(err)
+				iis.logger.Log(err)
 				continue
 			} else {
 				addedFiles++

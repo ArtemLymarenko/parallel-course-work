@@ -7,6 +7,17 @@ class TcpSocketClient:
         self.host = host
         self.port = port
         self.buff_size = buff_size
+        self.sock = None
+
+    def connect(self):
+        if not self.sock:
+            self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            self.sock.connect((self.host, self.port))
+
+    def close(self):
+        if self.sock:
+            self.sock.close()
+            self.sock = None
 
     def write_int32_to_buffer(self, value):
         return struct.pack('>I', value)
@@ -53,3 +64,7 @@ class TcpSocketClient:
             sock.connect((self.host, self.port))
             self.send_request_raw(sock, request)
             return self.read_response(sock)
+
+    def fetch_open_conn(self, request):
+        self.send_request_raw(self.sock, request)
+        return self.read_response(self.sock)

@@ -68,14 +68,16 @@ class TcpSocketResponse:
             response_time=self.details['time'],
             exception=message
         )
+
 class TcpLocustClient:
     def __init__(self, host, port, buff_size):
         self.client = TcpSocketClient(host, port, buff_size)
+        self.client.connect()
 
     def send_request(self, request_name, request, catch_response=False):
         start_time = time.time()
         try:
-            response_data = self.client.fetch(request)
+            response_data = self.client.fetch_open_conn(request)
             response_time = int((time.time() - start_time) * 1000)
             content_length = len(json.dumps(response_data).encode('utf-8'))
 
@@ -119,12 +121,12 @@ class TcpLocustClient:
                     exception=e
                 )
 
-
-
-
 class UserBehavior(TaskSet):
     def on_start(self):
         self.tcp_client = TcpLocustClient(self.user.host, self.user.port, buff_size=2048)
+
+    def on_stop(self):
+        self.tcp_client.client.close()
 
     @task(4)
     def search_index(self):
@@ -136,6 +138,7 @@ class UserBehavior(TaskSet):
             "body": {
                 "query": generate_random_sentence(10)
             },
+            "connectionAlive": True,
         }
         self.tcp_client.send_request("Search Index", request)
 
@@ -149,6 +152,7 @@ class UserBehavior(TaskSet):
             "body": {
                 "fileName": generate_random_file(),
             },
+            "connectionAlive": True,
         }
         self.tcp_client.send_request("Add File", request)
 
@@ -162,6 +166,7 @@ class UserBehavior(TaskSet):
             "body": {
                 "fileName": generate_random_file()
             },
+            "connectionAlive": True,
         }
         self.tcp_client.send_request("Remove File", request)
 

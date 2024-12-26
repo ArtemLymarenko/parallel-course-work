@@ -29,7 +29,7 @@ type Router interface {
 	ParseRawRequest(raw []byte) (*tcpRouter.Request, error)
 }
 
-const AliveTimeout = 2 * time.Second
+const AliveTimeout = 15 * time.Second
 
 type Logger interface {
 	Log(...interface{})
