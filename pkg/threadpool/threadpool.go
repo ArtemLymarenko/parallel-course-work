@@ -75,7 +75,7 @@ func (threadPool *ThreadPool) MustRun(mainThreadCount int) {
 
 	for range mainThreadCount {
 		threadPool.sync.wg.Add(1)
-		go threadPool.routineThread(true)
+		go threadPool.routineThread()
 	}
 
 	threadPool.isInitialized = true
@@ -114,7 +114,7 @@ func (threadPool *ThreadPool) AddTask(task *Task) error {
 	return nil
 }
 
-func (threadPool *ThreadPool) routineThread(isPrimary bool) {
+func (threadPool *ThreadPool) routineThread() {
 	defer threadPool.sync.wg.Done()
 
 	for threadPool.IsWorking() {
@@ -130,7 +130,7 @@ func (threadPool *ThreadPool) routineThread(isPrimary bool) {
 			threadPool.logger.Log(msg)
 		}
 
-		msg := fmt.Sprintf("task [%v], finished in %v, by primary threads: %v", task.Id, timeTaken, isPrimary)
+		msg := fmt.Sprintf("task [%v], finished in %v, by primary threads: %v", task.Id, timeTaken)
 		threadPool.logger.Log(msg)
 	}
 }
