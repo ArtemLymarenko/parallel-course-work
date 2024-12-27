@@ -34,8 +34,8 @@ func New(fileManager FileManager, logger Logger) *InvertedIndex {
 		"it", "for", "not", "on", "with", "he", "as", "you", "do", "at",
 		"this", "but", "his", "by", "from", "they", "we", "say", "her", "she",
 		"or", "an", "will", "my", "one", "all", "would", "there", "their", "what",
-		"so", "up", "out", "if", "about", "who", "get", "which", "go", "me", "now", "him", "is", "are",
-		"was", "were", "its",
+		"so", "up", "out", "if", "about", "who", "get", "which", "go", "me",
+		"now", "him", "is", "are", "was", "were", "its",
 	}
 
 	for _, word := range words {

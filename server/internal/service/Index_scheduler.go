@@ -53,7 +53,6 @@ func (iis *InvertedIndexScheduler) MonitorDirAsync(directory string, period time
 			err := iis.invertedIdx.AddFile(filePath)
 			if err != nil {
 				iis.logger.Log(err)
-				continue
 			} else {
 				addedFiles++
 			}

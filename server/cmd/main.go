@@ -3,8 +3,10 @@ package main
 import (
 	"parallel-course-work/pkg/mock"
 	"parallel-course-work/pkg/threadpool"
+	"parallel-course-work/server/internal/app"
 	filemanager "parallel-course-work/server/internal/infrastructure/file_manager"
 	invertedIdx "parallel-course-work/server/internal/infrastructure/inverted_idx"
+	"parallel-course-work/server/internal/infrastructure/logger"
 	tcpServer "parallel-course-work/server/internal/infrastructure/tcp_server"
 	"parallel-course-work/server/internal/inteface/rest/handlers"
 	v1Router "parallel-course-work/server/internal/inteface/rest/router"
@@ -13,10 +15,9 @@ import (
 )
 
 func main() {
-	loggerService := mock.NewLogger()
-
-	//loggerService := logger.MustGet("resources/logs/logs.txt", app.EnvDev)
-	//defer loggerService.Close()
+	_ = mock.NewLogger()
+	loggerService := logger.MustGet("resources/logs/logs.txt", app.EnvDev)
+	defer loggerService.Close()
 
 	fileManager := filemanager.New(loggerService)
 	invIndex := invertedIdx.New(fileManager, loggerService)

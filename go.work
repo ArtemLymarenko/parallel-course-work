@@ -1,7 +1,7 @@
 go 1.22
 
 use (
-	"server"
-	"pkg"
-	"clients/golang"
+	./clients/golang
+	./pkg
+	./server
 )
