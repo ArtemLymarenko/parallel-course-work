@@ -6,6 +6,12 @@ This repo contains UML diagrams and source code for the parallel computing cours
 
 ## Prerequisites
 
+### Clone the repository to your local machine
+```bash
+   git clone https://github.com/ArtemLymarenko/parallel-course-work.git 
+   cd parallel-course-work
+```
+
 ### Python Installation (>=3.12.3)
 1. **Download Python** from the official website: [python.org](https://www.python.org/downloads/)
     - Ensure you have Python version 3.12.3 or higher installed.
@@ -131,6 +137,9 @@ Download Golang from the official website: [go.dev](https://go.dev/dl/)
         - To start the client:
           ```bash
           cd clients/golang; go run cmd/main.go
+          
           ```
-
+>⚠️ **IMPORTANT:** 
+>
+> Files for building an inverted index should be stored in the ```server/resources/data/``` folder.
 ---
