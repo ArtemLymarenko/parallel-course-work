@@ -139,7 +139,15 @@ Download Golang from the official website: [go.dev](https://go.dev/dl/)
           cd clients/golang; go run cmd/main.go
           
           ```
->⚠️ **IMPORTANT:** 
+
+>⚠️ **IMPORTANT:**
 >
 > Files for building an inverted index should be stored in the ```server/resources/data/``` folder.
+
+---
+## Open the clients
+
+> To open Golang client use localhost:3000
+
+> To open Locust client use localhost:8089
 ---

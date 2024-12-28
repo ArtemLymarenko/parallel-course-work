@@ -4,6 +4,7 @@ import (
 	"parallel-course-work/pkg/hash"
 	"parallel-course-work/pkg/set"
 	"sync"
+	"sync/atomic"
 )
 
 const MaxSegments = 32
@@ -11,9 +12,8 @@ const MaxSegments = 32
 type SyncHashMap struct {
 	syncMap       []map[string]*set.Set[string]
 	locks         []sync.RWMutex
-	commonLock    sync.RWMutex
-	size          int
 	segmentsCount int
+	size          atomic.Int64
 }
 
 func NewSyncHashMap(segmentsCount int) *SyncHashMap {
@@ -31,8 +31,6 @@ func NewSyncHashMap(segmentsCount int) *SyncHashMap {
 	return &SyncHashMap{
 		syncMap:       sMap,
 		locks:         locks,
-		commonLock:    sync.RWMutex{},
-		size:          0,
 		segmentsCount: segmentsCount,
 	}
 }
@@ -49,6 +47,7 @@ func (h *SyncHashMap) Put(key string, field string) {
 	newSet := set.NewSet[string]()
 	newSet.Add(field)
 	h.syncMap[idx][key] = newSet
+	h.size.Add(1)
 }
 
 func (h *SyncHashMap) Get(key string) (*set.Set[string], bool) {
@@ -71,16 +70,11 @@ func (h *SyncHashMap) Remove(key string, field string) {
 		fileSet.Remove(field)
 		if fileSet.IsEmpty() {
 			delete(h.syncMap[idx], key)
+			h.size.Add(-1)
 		}
 	}
 }
 
-func (h *SyncHashMap) GetSize() int {
-	h.commonLock.RLock()
-	defer h.commonLock.RUnlock()
-	size := 0
-	for i, _ := range h.syncMap {
-		size += len(h.syncMap[i])
-	}
-	return size
+func (h *SyncHashMap) GetSize() int64 {
+	return h.size.Load()
 }

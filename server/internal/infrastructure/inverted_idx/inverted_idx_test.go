@@ -130,7 +130,7 @@ func TestInvertedIndex_Build(t *testing.T) {
 	invIdx := New(reader, logs)
 
 	invIdx.Build("test_files/", 12)
-	expectSize := 236
+	expectSize := int64(236)
 	if invIdx.storage.GetSize() != expectSize {
 		t.Errorf("InvertedIndex storage is wrong size, expected %v", expectSize)
 	}

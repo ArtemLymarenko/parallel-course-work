@@ -75,7 +75,7 @@ func TestSyncMap_ResizeV2(t *testing.T) {
 	const iterations = 10
 	for iter := 0; iter < iterations; iter++ {
 		t.Run(fmt.Sprintf("Iteration #%d", iter+1), func(t *testing.T) {
-			expectedSize := 500000
+			expectedSize := int64(500000)
 			addElements := 500000
 
 			m := NewSyncHashMap(32)
