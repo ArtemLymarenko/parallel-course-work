@@ -30,9 +30,22 @@ func AddFile(tmpl *htmlRender.Templates) func(w http.ResponseWriter, r *http.Req
 			return
 		}
 
-		render := struct{ Status string }{
-			Status: response.Status.String(),
+		var removeErrResponse ErrResponse
+		err = json.Unmarshal(response.Body, &removeErrResponse)
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			_, _ = w.Write([]byte(err.Error()))
+			return
 		}
-		tmpl.Render(w, "status-message", render)
+
+		render := struct {
+			StatusCode    string
+			StatusMessage string
+		}{
+			StatusCode:    response.Status.String(),
+			StatusMessage: removeErrResponse.Message,
+		}
+
+		tmpl.Render(w, "status", render)
 	}
 }

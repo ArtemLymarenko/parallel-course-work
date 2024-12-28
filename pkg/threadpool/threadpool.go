@@ -130,7 +130,7 @@ func (threadPool *ThreadPool) routineThread() {
 			threadPool.logger.Log(msg)
 		}
 
-		msg := fmt.Sprintf("task [%v], finished in %v, by primary threads: %v", task.Id, timeTaken)
+		msg := fmt.Sprintf("task [%v], finished in %v", task.Id, timeTaken)
 		threadPool.logger.Log(msg)
 	}
 }

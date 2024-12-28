@@ -75,7 +75,7 @@ func (i *InvertedIndex) AddFile(ctx *tcpRouter.RequestContext) error {
 
 		msg := fmt.Sprintf("%v: error adding file: %v", op, err)
 		i.logger.Log(msg)
-		return ctx.ResponseJSON(tcpRouter.StatusInternalServerError, errorResponse)
+		return ctx.ResponseJSON(tcpRouter.StatusNotFound, errorResponse)
 	}
 
 	return ctx.ResponseJSON(tcpRouter.StatusOK, nil)

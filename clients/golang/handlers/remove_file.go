@@ -7,6 +7,10 @@ import (
 	tcpClient "parallel-course-work/clients/golang/tcp_client"
 )
 
+type ErrResponse struct {
+	Message string `json:"message,omitempty"`
+}
+
 func RemoveFile(tmpl *htmlRender.Templates) func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 		filePath := r.FormValue("file-path")
@@ -30,9 +34,22 @@ func RemoveFile(tmpl *htmlRender.Templates) func(w http.ResponseWriter, r *http.
 			return
 		}
 
-		render := struct{ Status string }{
-			Status: response.Status.String(),
+		var removeErrResponse ErrResponse
+		err = json.Unmarshal(response.Body, &removeErrResponse)
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			_, _ = w.Write([]byte(err.Error()))
+			return
 		}
-		tmpl.Render(w, "status-message", render)
+
+		render := struct {
+			StatusCode    string
+			StatusMessage string
+		}{
+			StatusCode:    response.Status.String(),
+			StatusMessage: removeErrResponse.Message,
+		}
+
+		tmpl.Render(w, "status", render)
 	}
 }

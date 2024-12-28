@@ -16,7 +16,7 @@ import (
 
 func main() {
 	_ = mock.NewLogger()
-	loggerService := logger.MustGet("resources/logs/logs.txt", app.EnvDev)
+	loggerService := logger.MustGet("resources/logs/logs.txt", app.EnvProd)
 	defer loggerService.Close()
 
 	fileManager := filemanager.New(loggerService)

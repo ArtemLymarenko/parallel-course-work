@@ -46,7 +46,7 @@
             Delete File
         </button>
 
-        {{ template "status-message" .  }}
+        {{ template "status" .  }}
     </form>
 
     <script>
@@ -59,11 +59,16 @@
     </script>
 {{ end }}
 
-{{ block "status-message" .  }}
+{{ block "status" .  }}
+    <div id="status-code"
+         class="status-code"
+         style="margin: 20px 0px; padding: 0">
+        {{ .StatusCode }}
+    </div>
     <div id="status-message"
          class="status-message"
          style="margin: 20px 0px; padding: 0">
-        {{ .Status }}
+        {{ .StatusMessage }}
     </div>
 {{ end }}
 
