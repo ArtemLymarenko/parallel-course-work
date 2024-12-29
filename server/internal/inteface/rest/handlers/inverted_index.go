@@ -2,8 +2,8 @@ package handlers
 
 import (
 	"fmt"
-	tcpRouter "parallel-course-work/server/internal/infrastructure/tcp_server/router"
-	"parallel-course-work/server/internal/inteface/rest/dto"
+	tcpRouter "server/internal/infrastructure/tcp_server/router"
+	"server/internal/inteface/rest/dto"
 )
 
 type InvertedIndexService interface {

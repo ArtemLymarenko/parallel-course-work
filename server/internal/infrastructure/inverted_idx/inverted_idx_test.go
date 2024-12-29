@@ -3,9 +3,9 @@ package invertedIdx
 import (
 	"encoding/csv"
 	"fmt"
+	"github.com/ArtemLymarenko/parallel-course-work/pkg/mock"
 	"os"
-	"parallel-course-work/pkg/mock"
-	fileManager "parallel-course-work/server/internal/infrastructure/file_manager"
+	fileManager "server/internal/infrastructure/file_manager"
 	"slices"
 	"sync"
 	"testing"

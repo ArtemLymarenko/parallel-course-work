@@ -3,8 +3,8 @@ package tcpRouter
 import (
 	"encoding/json"
 	"errors"
+	"github.com/ArtemLymarenko/parallel-course-work/pkg/streamer"
 	"net"
-	"parallel-course-work/pkg/streamer"
 	"reflect"
 )
 

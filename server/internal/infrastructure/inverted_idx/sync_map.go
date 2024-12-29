@@ -1,8 +1,8 @@
 package invertedIdx
 
 import (
-	"parallel-course-work/pkg/hash"
-	"parallel-course-work/pkg/set"
+	"github.com/ArtemLymarenko/parallel-course-work/pkg/hash"
+	"github.com/ArtemLymarenko/parallel-course-work/pkg/set"
 	"sync"
 	"sync/atomic"
 )

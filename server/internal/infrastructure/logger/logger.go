@@ -3,7 +3,7 @@ package logger
 import (
 	"fmt"
 	"log"
-	"parallel-course-work/server/internal/app"
+	"server/internal/app"
 	"sync"
 	"time"
 )

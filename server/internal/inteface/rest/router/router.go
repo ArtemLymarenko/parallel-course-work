@@ -1,6 +1,6 @@
 package router
 
-import tcpRouter "parallel-course-work/server/internal/infrastructure/tcp_server/router"
+import tcpRouter "server/internal/infrastructure/tcp_server/router"
 
 type InvertedIndexHandlers interface {
 	Search(ctx *tcpRouter.RequestContext) error

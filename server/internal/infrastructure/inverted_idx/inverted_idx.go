@@ -2,8 +2,8 @@ package invertedIdx
 
 import (
 	"errors"
+	"github.com/ArtemLymarenko/parallel-course-work/pkg/set"
 	"log"
-	"parallel-course-work/pkg/set"
 	"regexp"
 	"strings"
 	"sync"

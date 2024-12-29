@@ -1,16 +1,16 @@
 package main
 
 import (
-	"parallel-course-work/pkg/mock"
-	"parallel-course-work/pkg/threadpool"
-	"parallel-course-work/server/internal/app"
-	filemanager "parallel-course-work/server/internal/infrastructure/file_manager"
-	invertedIdx "parallel-course-work/server/internal/infrastructure/inverted_idx"
-	"parallel-course-work/server/internal/infrastructure/logger"
-	tcpServer "parallel-course-work/server/internal/infrastructure/tcp_server"
-	"parallel-course-work/server/internal/inteface/rest/handlers"
-	v1Router "parallel-course-work/server/internal/inteface/rest/router"
-	"parallel-course-work/server/internal/service"
+	"github.com/ArtemLymarenko/parallel-course-work/pkg/mock"
+	"github.com/ArtemLymarenko/parallel-course-work/pkg/threadpool"
+	"server/internal/app"
+	filemanager "server/internal/infrastructure/file_manager"
+	invertedIdx "server/internal/infrastructure/inverted_idx"
+	"server/internal/infrastructure/logger"
+	tcpServer "server/internal/infrastructure/tcp_server"
+	"server/internal/inteface/rest/handlers"
+	v1Router "server/internal/inteface/rest/router"
+	"server/internal/service"
 	"time"
 )
 

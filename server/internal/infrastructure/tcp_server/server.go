@@ -4,14 +4,14 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/ArtemLymarenko/parallel-course-work/pkg/streamer"
+	"github.com/ArtemLymarenko/parallel-course-work/pkg/threadpool"
 	"io"
 	"log"
 	"net"
 	"os"
 	"os/signal"
-	"parallel-course-work/pkg/streamer"
-	"parallel-course-work/pkg/threadpool"
-	tcpRouter "parallel-course-work/server/internal/infrastructure/tcp_server/router"
+	tcpRouter "server/internal/infrastructure/tcp_server/router"
 	"sync"
 	"sync/atomic"
 	"syscall"
@@ -57,7 +57,7 @@ func New(port int, threadPool ThreadPool, router Router, logger Logger) *Server 
 }
 
 func (server *Server) getAddr() string {
-	return fmt.Sprintf(":%d", server.port)
+	return fmt.Sprintf("0.0.0.0:%d", server.port)
 }
 
 func (server *Server) Start(threadsCount int) error {

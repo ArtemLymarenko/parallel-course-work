@@ -2,7 +2,7 @@ package invertedIdx
 
 import (
 	"fmt"
-	syncMap "parallel-course-work/pkg/sync_map"
+	syncMap "github.com/ArtemLymarenko/parallel-course-work/pkg/sync_map"
 	"strconv"
 	"sync"
 	"testing"

@@ -1,10 +1,10 @@
 package main
 
 import (
+	"golang/handlers"
+	htmlRender "golang/html_render"
 	"log"
 	"net/http"
-	"parallel-course-work/clients/golang/handlers"
-	htmlRender "parallel-course-work/clients/golang/html_render"
 	"time"
 )
 
@@ -35,5 +35,5 @@ func main() {
 
 	handler := Logging(mux)
 
-	log.Fatal(http.ListenAndServe(":3000", handler))
+	log.Fatal(http.ListenAndServe("0.0.0.0:3000", handler))
 }

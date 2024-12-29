@@ -2,9 +2,9 @@ package handlers
 
 import (
 	"encoding/json"
+	htmlRender "golang/html_render"
+	tcpClient "golang/tcp_client"
 	"net/http"
-	htmlRender "parallel-course-work/clients/golang/html_render"
-	tcpClient "parallel-course-work/clients/golang/tcp_client"
 )
 
 type ErrResponse struct {

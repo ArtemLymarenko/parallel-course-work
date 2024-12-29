@@ -2,13 +2,15 @@ package tcpClient
 
 import (
 	"errors"
+	"fmt"
+	"github.com/ArtemLymarenko/parallel-course-work/pkg/streamer"
 	"net"
-	"parallel-course-work/pkg/streamer"
-	"strconv"
 )
 
 func Fetch(request *Request, port int) ([]byte, error) {
-	conn, err := net.Dial("tcp", "localhost:"+strconv.Itoa(port))
+	connPath := fmt.Sprintf("server-app:%d", port)
+
+	conn, err := net.Dial("tcp", connPath)
 	if err != nil {
 		return nil, err
 	}
