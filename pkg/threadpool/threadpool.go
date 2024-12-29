@@ -3,8 +3,8 @@ package threadpool
 import (
 	"errors"
 	"fmt"
+	"github.com/ArtemLymarenko/parallel-course-work/pkg/priorityqueue"
 	"log"
-	"parallel-course-work/pkg/priorityqueue"
 	"sync"
 )
 
