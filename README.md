@@ -12,7 +12,7 @@ This repo contains UML diagrams and source code for the parallel computing cours
    cd parallel-course-work
 ```
 
-### Python Installation (>=3.12.3)
+## Python Installation (>=3.12.3)
 1. **Download Python** from the official website: [python.org](https://www.python.org/downloads/)
     - Ensure you have Python version 3.12.3 or higher installed.
 
@@ -59,13 +59,10 @@ This repo contains UML diagrams and source code for the parallel computing cours
 
 ---
 
-## Golang Installation (>=go1.22) 
-
-# Go Installation Guide
-
+## Golang Installation (>=go1.22)
 Download Golang from the official website: [go.dev](https://go.dev/dl/)
 
-## Linux
+### Linux
 
 1. Remove previous Go installation and extract archive:
    ```bash
@@ -84,7 +81,7 @@ Download Golang from the official website: [go.dev](https://go.dev/dl/)
    go version
    ```
 
-## macOS
+### macOS
    1. Open and run the downloaded package installer
    2. Go will be installed to `/usr/local/go`
    3. `/usr/local/go/bin` will be added to PATH automatically
@@ -94,7 +91,7 @@ Download Golang from the official website: [go.dev](https://go.dev/dl/)
    go version
    ```
 
-## Windows
+### Windows
    1. Run the downloaded MSI installer
    2. Default installation: Program Files or Program Files (x86)
    3. Close and reopen command prompts after installation
