@@ -2,7 +2,7 @@ package threadpool
 
 import (
 	"fmt"
-	"parallel-course-work/pkg/mock"
+	"github.com/ArtemLymarenko/parallel-course-work/pkg/mock"
 	"testing"
 	"time"
 )
@@ -74,7 +74,7 @@ var logs = mock.NewLogger()
 //}
 
 func TestRunPrimaryAndSecondaryAtTime(t *testing.T) {
-	pool := New(1, 1, logs)
+	pool := New(logs)
 	for range 50000 {
 		go func() {
 			task := NewTask(1, func() error {

@@ -1,10 +1,10 @@
 package syncMap
 
 import (
+	"github.com/ArtemLymarenko/parallel-course-work/pkg/hash"
+	linkedList "github.com/ArtemLymarenko/parallel-course-work/pkg/linked_list"
+	"github.com/ArtemLymarenko/parallel-course-work/pkg/set"
 	"hash/maphash"
-	"pkg/hash"
-	linkedList "pkg/linked_list"
-	"pkg/set"
 	"sync"
 )
 

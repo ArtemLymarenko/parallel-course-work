@@ -1,8 +1,8 @@
 package syncMap
 
 import (
-	"pkg/hash"
-	linkedList "pkg/linked_list"
+	"github.com/ArtemLymarenko/parallel-course-work/pkg/hash"
+	linkedList "github.com/ArtemLymarenko/parallel-course-work/pkg/linked_list"
 	"sync"
 	"sync/atomic"
 )
