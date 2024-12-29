@@ -1,8 +1,8 @@
 package syncMap
 
 import (
-	"parallel-course-work/pkg/hash"
-	"parallel-course-work/pkg/set"
+	"pkg/hash"
+	"pkg/set"
 	"sync/atomic"
 )
 

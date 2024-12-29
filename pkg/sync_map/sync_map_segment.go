@@ -2,9 +2,9 @@ package syncMap
 
 import (
 	"hash/maphash"
-	"parallel-course-work/pkg/hash"
-	linkedList "parallel-course-work/pkg/linked_list"
-	"parallel-course-work/pkg/set"
+	"pkg/hash"
+	linkedList "pkg/linked_list"
+	"pkg/set"
 	"sync"
 )
 

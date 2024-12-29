@@ -1,3 +1,3 @@
-module parallel-course-work/pkg
+module pkg
 
 go 1.22
