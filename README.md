@@ -107,8 +107,8 @@ Download Golang from the official website: [go.dev](https://go.dev/dl/)
    ```
 ---
 
-## Setting Up Go Project
-
+# Setting Up Go Project
+## Locally
 1. **Install Go Dependencies:**
     - For **Linux/macOS**:
       ```bash
@@ -140,10 +140,22 @@ Download Golang from the official website: [go.dev](https://go.dev/dl/)
           
           ```
 
+## Using Docker
+1. **Run Docker Compose in the root folder:**
+   - To start the containers:  
+   ```bash
+     docker-compose up
+     ```
+   - To stop the containers:
+   ```bash
+     docker-compose down
+     ```
+
 >⚠️ **IMPORTANT:**
 >
 > Files for building an inverted index should be stored in the ```server/resources/data/``` folder.
-
+>
+> File for logs should be stored in the ```server/resources/logs``` foler and named ```logs.txt```.
 ---
 ## Open the clients
 

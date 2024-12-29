@@ -1,0 +1,20 @@
+2024/12/29 17:14:21 Registered route - Method: GET, Path: /health
+2024/12/29 17:14:21 Registered route - Method: GET, Path: /index/search
+2024/12/29 17:14:21 Registered route - Method: GET, Path: /index/file
+2024/12/29 17:14:21 Registered route - Method: POST, Path: /index/file
+2024/12/29 17:14:21 Registered route - Method: DELETE, Path: /index/file
+2024/12/29 17:14:21 thread pool is running...
+2024/12/29 17:14:21 Server started on port:8080
+2024/12/29 17:14:27 client connection [1] opened
+2024/12/29 17:14:27 Request: method: GET - path: /index/search
+2024/12/29 17:14:27 task [1] was taken
+2024/12/29 17:14:27 client [1] disconnected
+2024/12/29 17:14:27 task [1], finished in 169.804µs
+2024/12/29 17:14:29 client connection [2] opened
+2024/12/29 17:14:29 Request: method: GET - path: /index/file
+2024/12/29 17:14:29 task [2] was taken
+2024/12/29 17:14:29 client [2] disconnected
+2024/12/29 17:14:29 task [2], finished in 1.846581ms
+2024/12/29 17:14:39 Shutting down acceptConnections...
+2024/12/29 17:14:39 threadPool terminated...
+2024/12/29 17:14:39 server stopped

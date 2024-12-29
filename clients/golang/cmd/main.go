@@ -1,10 +1,12 @@
 package main
 
 import (
+	"golang/app"
 	"golang/handlers"
 	htmlRender "golang/html_render"
 	"log"
 	"net/http"
+	"os"
 	"time"
 )
 
@@ -17,6 +19,8 @@ func Logging(next http.Handler) http.Handler {
 }
 
 func main() {
+	env := app.Env(os.Getenv("ENV"))
+
 	mux := http.NewServeMux()
 
 	tmpl := htmlRender.NewTemplates()
@@ -28,12 +32,13 @@ func main() {
 		tmpl.Render(w, "index", map[string]interface{}{})
 	})
 
-	mux.HandleFunc("/search", handlers.Search(tmpl))
-	mux.HandleFunc("/download", handlers.Download(tmpl))
-	mux.HandleFunc("/add-file", handlers.AddFile(tmpl))
-	mux.HandleFunc("/remove-file", handlers.RemoveFile(tmpl))
+	mux.HandleFunc("/search", handlers.Search(tmpl, env))
+	mux.HandleFunc("/download", handlers.Download(tmpl, env))
+	mux.HandleFunc("/add-file", handlers.AddFile(tmpl, env))
+	mux.HandleFunc("/remove-file", handlers.RemoveFile(tmpl, env))
 
 	handler := Logging(mux)
 
+	log.Println("Server listening on :3000")
 	log.Fatal(http.ListenAndServe("0.0.0.0:3000", handler))
 }
