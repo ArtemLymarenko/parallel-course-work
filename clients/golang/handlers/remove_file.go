@@ -2,8 +2,6 @@ package handlers
 
 import (
 	"encoding/json"
-	"golang/app"
-	htmlRender "golang/html_render"
 	tcpClient "golang/tcp_client"
 	"net/http"
 )
@@ -12,7 +10,7 @@ type ErrResponse struct {
 	Message string `json:"message,omitempty"`
 }
 
-func RemoveFile(tmpl *htmlRender.Templates, env app.Env) func(w http.ResponseWriter, r *http.Request) {
+func (h *Handlers) RemoveFile() func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 		filePath := r.FormValue("file-path")
 
@@ -26,7 +24,7 @@ func RemoveFile(tmpl *htmlRender.Templates, env app.Env) func(w http.ResponseWri
 			},
 		}
 
-		data, err := tcpClient.Fetch(req, 8080, env)
+		data, err := tcpClient.Fetch(req, 8080, h.env)
 		var response tcpClient.Response
 		err = json.Unmarshal(data, &response)
 		if err != nil {
@@ -51,6 +49,6 @@ func RemoveFile(tmpl *htmlRender.Templates, env app.Env) func(w http.ResponseWri
 			StatusMessage: removeErrResponse.Message,
 		}
 
-		tmpl.Render(w, "status", render)
+		_ = h.tmpl.Render(w, "status", render)
 	}
 }

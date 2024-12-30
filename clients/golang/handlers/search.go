@@ -2,8 +2,6 @@ package handlers
 
 import (
 	"encoding/json"
-	"golang/app"
-	htmlRender "golang/html_render"
 	tcpClient "golang/tcp_client"
 	"net/http"
 )
@@ -16,13 +14,19 @@ type SearchResponse struct {
 	Files []string `json:"files"`
 }
 
-func Search(tmpl *htmlRender.Templates, env app.Env) func(w http.ResponseWriter, r *http.Request) {
+func (h *Handlers) Search() func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 		query := r.FormValue("search")
+		searchAnyWord := r.FormValue("search-mode") == "on"
+
+		reqPath := "/index/search"
+		if searchAnyWord {
+			reqPath = "/index/search-any"
+		}
 
 		req := &tcpClient.Request{
 			RequestMeta: tcpClient.RequestMeta{
-				Path:   "/index/search",
+				Path:   reqPath,
 				Method: "GET",
 			},
 			Body: SearchRequestDto{
@@ -30,7 +34,7 @@ func Search(tmpl *htmlRender.Templates, env app.Env) func(w http.ResponseWriter,
 			},
 		}
 
-		data, err := tcpClient.Fetch(req, 8080, env)
+		data, err := tcpClient.Fetch(req, 8080, h.env)
 		var response tcpClient.Response
 		err = json.Unmarshal(data, &response)
 		if err != nil {
@@ -55,6 +59,6 @@ func Search(tmpl *htmlRender.Templates, env app.Env) func(w http.ResponseWriter,
 			Files: searchResponse.Files,
 		}
 
-		_ = tmpl.Render(w, "history-item", toRender)
+		_ = h.tmpl.Render(w, "history-item", toRender)
 	}
 }

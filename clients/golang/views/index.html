@@ -76,6 +76,10 @@
     <form id="search-form" hx-post="/search" hx-target="#history-container" hx-swap="afterend" hx-trigger="submit">
         <label for="search">Search:</label>
         <input type="text" id="search" name="search" placeholder="Enter your search query..." />
+        <div class="search-mode">
+            <input type="checkbox" id="search-any" name="search-mode" />
+            <label for="search-any">Search by any word</label>
+        </div>
         <button type="submit" class="search-btn" hx-trigger="submit,reset">Search for results</button>
     </form>
 

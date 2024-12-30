@@ -32,10 +32,11 @@ func main() {
 		tmpl.Render(w, "index", map[string]interface{}{})
 	})
 
-	mux.HandleFunc("/search", handlers.Search(tmpl, env))
-	mux.HandleFunc("/download", handlers.Download(tmpl, env))
-	mux.HandleFunc("/add-file", handlers.AddFile(tmpl, env))
-	mux.HandleFunc("/remove-file", handlers.RemoveFile(tmpl, env))
+	h := handlers.New(env, tmpl)
+	mux.HandleFunc("/search", h.Search())
+	mux.HandleFunc("/download", h.Download())
+	mux.HandleFunc("/add-file", h.AddFile())
+	mux.HandleFunc("/remove-file", h.RemoveFile())
 
 	handler := Logging(mux)
 

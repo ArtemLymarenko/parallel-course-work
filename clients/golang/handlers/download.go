@@ -2,8 +2,6 @@ package handlers
 
 import (
 	"encoding/json"
-	"golang/app"
-	htmlRender "golang/html_render"
 	tcpClient "golang/tcp_client"
 	"net/http"
 )
@@ -16,7 +14,7 @@ type GetFileResponse struct {
 	FileContent string `json:"fileContent"`
 }
 
-func Download(tmpl *htmlRender.Templates, env app.Env) func(w http.ResponseWriter, r *http.Request) {
+func (h *Handlers) Download() func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 		fileName := r.URL.Query().Get("filename")
 
@@ -30,7 +28,7 @@ func Download(tmpl *htmlRender.Templates, env app.Env) func(w http.ResponseWrite
 			},
 		}
 
-		data, err := tcpClient.Fetch(req, 8080, env)
+		data, err := tcpClient.Fetch(req, 8080, h.env)
 		var response tcpClient.Response
 		err = json.Unmarshal(data, &response)
 		if err != nil || response.Status != tcpClient.StatusOK {
@@ -47,6 +45,6 @@ func Download(tmpl *htmlRender.Templates, env app.Env) func(w http.ResponseWrite
 			return
 		}
 
-		tmpl.Render(w, "file-content", fileResponse)
+		_ = h.tmpl.Render(w, "file-content", fileResponse)
 	}
 }

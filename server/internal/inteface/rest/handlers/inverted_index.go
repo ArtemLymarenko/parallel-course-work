@@ -8,6 +8,7 @@ import (
 
 type InvertedIndexService interface {
 	Search(query string) []string
+	SearchAny(query string) []string
 	AddFile(filePath string) error
 	RemoveFile(filePath string) error
 	GetFileContent(filePath string) ([]byte, error)
@@ -45,6 +46,29 @@ func (i *InvertedIndex) Search(ctx *tcpRouter.RequestContext) error {
 	}
 
 	result := i.invIndexService.Search(body.Query)
+	response := dto.SearchResponse{
+		Files: result,
+	}
+
+	return ctx.ResponseJSON(tcpRouter.StatusOK, response)
+}
+
+func (i *InvertedIndex) SearchAny(ctx *tcpRouter.RequestContext) error {
+	const op = "InvertedIndex.SearchAny"
+
+	var body dto.SearchRequest
+	err := ctx.ShouldParseBodyJSON(&body)
+	if err != nil {
+		errorResponse := dto.ErrorResponse{
+			Message: "could not parse request body",
+		}
+
+		msg := fmt.Sprintf("%v: error parsing request body: %v", op, err)
+		i.logger.Log(msg)
+		return ctx.ResponseJSON(tcpRouter.StatusBadRequest, errorResponse)
+	}
+
+	result := i.invIndexService.SearchAny(body.Query)
 	response := dto.SearchResponse{
 		Files: result,
 	}

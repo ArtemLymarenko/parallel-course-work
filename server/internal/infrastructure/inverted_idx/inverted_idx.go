@@ -215,3 +215,18 @@ func (i *InvertedIndex) Search(query string) []string {
 
 	return result
 }
+
+func (i *InvertedIndex) SearchAny(query string) []string {
+	parsed := i.parseText(query)
+
+	result := set.NewSet[string]()
+	for _, word := range parsed {
+		if fileSet, exists := i.storage.Get(word); exists {
+			for fileName := range fileSet.Keys {
+				result.Add(fileName)
+			}
+		}
+	}
+
+	return result.ToSlice()
+}
