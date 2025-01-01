@@ -160,3 +160,140 @@ Download Golang from the official website: [go.dev](https://go.dev/dl/)
 
 > To open Locust client use localhost:8089
 ---
+
+# Application Protocol Documentation
+
+## Overview
+This document describes the protocol for communicating with the server via TCP connection. All requests and responses use JSON serialization.
+
+## Connection Protocol
+## How to communicate?
+- First, you need to serialize your request into special format using JSON, described below.
+- Then you need to calculate `chunkSize` and `totalChunks` and before sending each request you need to send size of chunk and their total number.
+1. chunkSize   - `4 bytes`
+2. totalChunks - `4 bytes`
+- To get response from the server, you first need to retrieve `chunkSize` and `totalChunks` and then all other data splitted by chunks.
+- Finally, deserialize retrieved data from JSON.
+
+### Request Format
+All requests must include a `meta` object and may optionally include `body` and `connectionAlive` fields.
+
+**Allowed Methods:** `GET`, `POST`, `DELETE`
+
+```json
+{
+    "meta": {
+        "path": { "type": "string" },      
+        "method": { "type": "string" }    
+    },
+    "body": {},             
+    "connectionAlive": { "type": "boolean" }
+}
+```
+
+### Response Format
+```json
+{
+    "status": "ResponseStatus",
+    "body": {}
+}
+```
+
+### Status Codes
+```go
+StatusOK                  ResponseStatus = 0
+StatusProcessing          ResponseStatus = 1
+StatusNotFound            ResponseStatus = 2
+StatusBadRequest          ResponseStatus = 3
+StatusInternalServerError ResponseStatus = 4
+```
+
+### Error Response
+When an error occurs, the response body will contain a message:
+```json
+{
+    "message": { "type": "string" }
+}
+```
+
+## API Endpoints
+
+### 1. Search Files
+Search for files matching a specific query.
+
+- **Path:** `index/search`
+- **Method:** `GET`
+- **Request Body:**
+```json 
+{
+    "query": "string"
+}
+```
+- **Response Body:**
+```json 
+{
+    "files": ["string"]
+}
+```
+
+### 2. Search Any
+Search for files with more flexible matching.
+
+- **Path:** `index/search-any`
+- **Method:** `GET`
+- **Request Body:**
+```json 
+{
+    "query": "string"
+}
+```
+- **Response Body:**
+```json 
+{
+    "files": ["string"]
+}
+```
+
+### 3. Get File Content
+Retrieve the content of a specific file.
+
+- **Path:** `/index/file`
+- **Method:** `GET`
+- **Request Body:**
+```json 
+{
+    "fileName": "string"
+}
+```
+- **Response Body:**
+```json 
+{
+    "fileContent": "string"
+}
+```
+
+### 4. Add File
+Add a new file to the index.
+
+- **Path:** `/index/file`
+- **Method:** `POST`
+- **Request Body:**
+```json 
+{
+    "fileName": "string"
+}
+```
+
+### 5. Remove File
+Delete a file from the index.
+
+- **Path:** `/index/file`
+- **Method:** `DELETE`
+- **Request Body:**
+```json 
+{
+   "fileName": "string"
+}
+```
+
+
