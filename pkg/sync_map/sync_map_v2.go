@@ -113,11 +113,11 @@ func (h *syncMapV2[V]) checkAndStartResize() {
 	}
 
 	newResizeCap := 2 * len(h.innerArray)
-	h.lock.Unlock()
 
 	h.resizeArray = make([]*linkedList.LinkedList[BucketV2[V]], newResizeCap)
 	h.isResizing = true
 
+	h.lock.Unlock()
 	h.resizeLock.Unlock()
 
 	go h.resize()

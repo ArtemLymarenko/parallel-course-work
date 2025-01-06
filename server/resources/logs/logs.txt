@@ -1,0 +1,254 @@
+2025/01/02 10:41:30 Registered route - Method: GET, Path: /health
+2025/01/02 10:41:30 Registered route - Method: GET, Path: /index/search
+2025/01/02 10:41:30 Registered route - Method: GET, Path: /index/search-any
+2025/01/02 10:41:30 Registered route - Method: GET, Path: /index/file
+2025/01/02 10:41:30 Registered route - Method: POST, Path: /index/file
+2025/01/02 10:41:30 Registered route - Method: DELETE, Path: /index/file
+2025/01/02 10:41:30 thread pool is running...
+2025/01/02 10:41:30 Server started on port:8080
+2025/01/02 10:41:45 client connection [1] opened
+2025/01/02 10:41:45 Request: method: POST - path: /index/file
+2025/01/02 10:41:45 task [1] was taken
+2025/01/02 10:41:45 InvertedIndex.AddFile: error adding file: open ‪C:\Users\Artem\Desktop\test.txt: The filename, directory name, or volume label syntax is incorrect.
+2025/01/02 10:41:45 client [1] disconnected
+2025/01/02 10:41:45 task [1], finished in 0s
+2025/01/02 10:41:51 client connection [2] opened
+2025/01/02 10:41:51 Request: method: POST - path: /index/file
+2025/01/02 10:41:51 task [2] was taken
+2025/01/02 10:41:51 InvertedIndex.AddFile: error adding file: open ‪C:\Users\Artem\Desktop\test.txt: The filename, directory name, or volume label syntax is incorrect.
+2025/01/02 10:41:51 client [2] disconnected
+2025/01/02 10:41:51 task [2], finished in 537µs
+2025/01/02 10:42:00 inverted index was updated successfully. added files: 0
+2025/01/02 10:42:04 client connection [3] opened
+2025/01/02 10:42:04 Request: method: POST - path: /index/file
+2025/01/02 10:42:04 task [3] was taken
+2025/01/02 10:42:04 client [3] disconnected
+2025/01/02 10:42:04 task [3], finished in 35.2µs
+2025/01/02 10:42:08 client connection [4] opened
+2025/01/02 10:42:08 Request: method: GET - path: /index/search
+2025/01/02 10:42:08 task [4] was taken
+2025/01/02 10:42:08 client [4] disconnected
+2025/01/02 10:42:08 task [4], finished in 536.9µs
+2025/01/02 10:42:12 client connection [5] opened
+2025/01/02 10:42:12 Request: method: GET - path: /index/file
+2025/01/02 10:42:12 task [5] was taken
+2025/01/02 10:42:12 client [5] disconnected
+2025/01/02 10:42:12 task [5], finished in 536.2µs
+2025/01/02 10:42:17 client connection [6] opened
+2025/01/02 10:42:17 Request: method: DELETE - path: /index/file
+2025/01/02 10:42:17 task [6] was taken
+2025/01/02 10:42:17 client [6] disconnected
+2025/01/02 10:42:17 task [6], finished in 534.5µs
+2025/01/02 10:42:20 client connection [7] opened
+2025/01/02 10:42:20 Request: method: GET - path: /index/search
+2025/01/02 10:42:20 task [7] was taken
+2025/01/02 10:42:20 client [7] disconnected
+2025/01/02 10:42:20 task [7], finished in 0s
+2025/01/02 10:42:30 inverted index was updated successfully. added files: 0
+2025/01/02 10:42:34 Shutting down acceptConnections...
+2025/01/02 10:42:34 threadPool terminated...
+2025/01/02 10:42:34 server stopped
+2025/01/02 11:26:09 Registered route - Method: GET, Path: /health
+2025/01/02 11:26:09 Registered route - Method: GET, Path: /index/search
+2025/01/02 11:26:09 Registered route - Method: GET, Path: /index/search-any
+2025/01/02 11:26:09 Registered route - Method: GET, Path: /index/file
+2025/01/02 11:26:09 Registered route - Method: POST, Path: /index/file
+2025/01/02 11:26:09 Registered route - Method: DELETE, Path: /index/file
+2025/01/02 11:26:09 thread pool is running...
+2025/01/02 11:26:09 Server started on port:8080
+2025/01/02 11:26:39 inverted index was updated successfully. added files: 0
+2025/01/02 11:27:09 inverted index was updated successfully. added files: 0
+2025/01/02 11:27:23 client connection [1] opened
+2025/01/02 11:27:23 Request: method: GET - path: /index/search
+2025/01/02 11:27:23 task [1] was taken
+2025/01/02 11:27:23 client [1] disconnected
+2025/01/02 11:27:23 task [1], finished in 999.2µs
+2025/01/02 11:27:25 client connection [2] opened
+2025/01/02 11:27:25 Request: method: GET - path: /index/file
+2025/01/02 11:27:25 task [2] was taken
+2025/01/02 11:27:25 client [2] disconnected
+2025/01/02 11:27:25 task [2], finished in 548.3µs
+2025/01/02 11:27:39 inverted index was updated successfully. added files: 0
+2025/01/02 11:27:59 client connection [3] opened
+2025/01/02 11:27:59 Request: method: GET - path: /index/search-any
+2025/01/02 11:27:59 task [3] was taken
+2025/01/02 11:27:59 client [3] disconnected
+2025/01/02 11:27:59 task [3], finished in 538µs
+2025/01/02 11:28:09 inverted index was updated successfully. added files: 0
+2025/01/02 11:28:10 client connection [4] opened
+2025/01/02 11:28:10 Request: method: GET - path: /index/file
+2025/01/02 11:28:10 task [4] was taken
+2025/01/02 11:28:10 client [4] disconnected
+2025/01/02 11:28:10 task [4], finished in 32µs
+2025/01/02 11:28:20 client connection [5] opened
+2025/01/02 11:28:20 Request: method: DELETE - path: /index/file
+2025/01/02 11:28:20 task [5] was taken
+2025/01/02 11:28:20 client [5] disconnected
+2025/01/02 11:28:20 task [5], finished in 1.5819ms
+2025/01/02 11:28:26 client connection [6] opened
+2025/01/02 11:28:26 Request: method: GET - path: /index/file
+2025/01/02 11:28:26 task [6] was taken
+2025/01/02 11:28:26 client [6] disconnected
+2025/01/02 11:28:26 task [6], finished in 0s
+2025/01/02 11:28:30 client connection [7] opened
+2025/01/02 11:28:30 Request: method: GET - path: /index/search
+2025/01/02 11:28:30 task [7] was taken
+2025/01/02 11:28:30 client [7] disconnected
+2025/01/02 11:28:30 task [7], finished in 1.0656ms
+2025/01/02 11:28:39 inverted index was updated successfully. added files: 1
+2025/01/02 11:28:55 client connection [8] opened
+2025/01/02 11:28:55 Request: method: GET - path: /index/search
+2025/01/02 11:28:55 task [8] was taken
+2025/01/02 11:28:55 client [8] disconnected
+2025/01/02 11:28:55 task [8], finished in 542.8µs
+2025/01/02 11:29:09 inverted index was updated successfully. added files: 0
+2025/01/02 11:29:15 client connection [9] opened
+2025/01/02 11:29:15 Request: method: POST - path: /index/file
+2025/01/02 11:29:15 task [9] was taken
+2025/01/02 11:29:15 client [9] disconnected
+2025/01/02 11:29:15 task [9], finished in 16.6µs
+2025/01/02 11:29:21 client connection [10] opened
+2025/01/02 11:29:21 Request: method: GET - path: /index/search
+2025/01/02 11:29:21 task [10] was taken
+2025/01/02 11:29:21 client [10] disconnected
+2025/01/02 11:29:21 task [10], finished in 550µs
+2025/01/02 11:29:23 client connection [11] opened
+2025/01/02 11:29:23 Request: method: GET - path: /index/file
+2025/01/02 11:29:23 task [11] was taken
+2025/01/02 11:29:23 client [11] disconnected
+2025/01/02 11:29:23 task [11], finished in 506.2µs
+2025/01/02 11:29:39 inverted index was updated successfully. added files: 0
+2025/01/02 11:30:02 Shutting down acceptConnections...
+2025/01/02 11:30:02 threadPool terminated...
+2025/01/02 11:30:02 server stopped
+2025/01/02 09:34:53 Registered route - Method: GET, Path: /health
+2025/01/02 09:34:53 Registered route - Method: GET, Path: /index/search
+2025/01/02 09:34:53 Registered route - Method: GET, Path: /index/search-any
+2025/01/02 09:34:53 Registered route - Method: GET, Path: /index/file
+2025/01/02 09:34:53 Registered route - Method: POST, Path: /index/file
+2025/01/02 09:34:53 Registered route - Method: DELETE, Path: /index/file
+2025/01/02 09:34:53 thread pool is running...
+2025/01/02 09:34:53 Server started on port:8080
+2025/01/02 09:35:03 Shutting down acceptConnections...
+2025/01/02 09:35:03 threadPool terminated...
+2025/01/02 09:35:03 server stopped
+2025/01/02 11:37:41 Registered route - Method: GET, Path: /health
+2025/01/02 11:37:41 Registered route - Method: GET, Path: /index/search
+2025/01/02 11:37:41 Registered route - Method: GET, Path: /index/search-any
+2025/01/02 11:37:41 Registered route - Method: GET, Path: /index/file
+2025/01/02 11:37:41 Registered route - Method: POST, Path: /index/file
+2025/01/02 11:37:41 Registered route - Method: DELETE, Path: /index/file
+2025/01/02 11:37:41 thread pool is running...
+2025/01/02 11:37:41 Server started on port:8080
+2025/01/02 11:37:43 Shutting down acceptConnections...
+2025/01/02 11:37:43 threadPool terminated...
+2025/01/02 11:37:43 server stopped
+2025/01/05 15:54:35 Registered route - Method: GET, Path: /health
+2025/01/05 15:54:35 Registered route - Method: GET, Path: /index/search
+2025/01/05 15:54:35 Registered route - Method: GET, Path: /index/search-any
+2025/01/05 15:54:35 Registered route - Method: GET, Path: /index/file
+2025/01/05 15:54:35 Registered route - Method: POST, Path: /index/file
+2025/01/05 15:54:35 Registered route - Method: DELETE, Path: /index/file
+2025/01/05 15:54:35 thread pool is running...
+2025/01/05 15:54:35 Server started on port:8080
+2025/01/05 15:54:36 Shutting down acceptConnections...
+2025/01/05 15:54:36 threadPool terminated...
+2025/01/05 15:54:36 server stopped
+2025/01/07 00:24:03 Registered route - Method: GET, Path: /health
+2025/01/07 00:24:03 Registered route - Method: GET, Path: /index/search
+2025/01/07 00:24:03 Registered route - Method: GET, Path: /index/search-any
+2025/01/07 00:24:03 Registered route - Method: GET, Path: /index/file
+2025/01/07 00:24:03 Registered route - Method: POST, Path: /index/file
+2025/01/07 00:24:03 Registered route - Method: DELETE, Path: /index/file
+2025/01/07 00:24:03 thread pool is running...
+2025/01/07 00:24:03 Server started on port:8080
+2025/01/07 00:24:23 client connection [1] opened
+2025/01/07 00:24:23 Request: method: GET - path: /index/search
+2025/01/07 00:24:23 task [1] was taken
+2025/01/07 00:24:23 client [1] disconnected
+2025/01/07 00:24:23 task [1], finished in 506µs
+2025/01/07 00:24:33 inverted index was updated successfully. added files: 0
+2025/01/07 00:24:37 client connection [2] opened
+2025/01/07 00:24:37 Request: method: GET - path: /index/search-any
+2025/01/07 00:24:37 task [2] was taken
+2025/01/07 00:24:37 client [2] disconnected
+2025/01/07 00:24:37 task [2], finished in 0s
+2025/01/07 00:24:41 client connection [3] opened
+2025/01/07 00:24:41 Request: method: GET - path: /index/search
+2025/01/07 00:24:41 task [3] was taken
+2025/01/07 00:24:41 client [3] disconnected
+2025/01/07 00:24:41 task [3], finished in 522.9µs
+2025/01/07 00:24:53 client connection [4] opened
+2025/01/07 00:24:53 Request: method: DELETE - path: /index/file
+2025/01/07 00:24:53 task [4] was taken
+2025/01/07 00:24:53 client [4] disconnected
+2025/01/07 00:24:53 task [4], finished in 1.058ms
+2025/01/07 00:25:03 inverted index was updated successfully. added files: 1
+2025/01/07 00:25:20 client connection [5] opened
+2025/01/07 00:25:33 inverted index was updated successfully. added files: 0
+2025/01/07 00:25:52 error happened read tcp 127.0.0.1:8080->127.0.0.1:64298: wsarecv: An existing connection was forcibly closed by the remote host.
+2025/01/07 00:26:03 inverted index was updated successfully. added files: 0
+2025/01/07 00:26:04 Shutting down acceptConnections...
+2025/01/07 00:26:04 threadPool terminated...
+2025/01/07 00:26:04 server stopped
+2025/01/07 00:26:16 Registered route - Method: GET, Path: /health
+2025/01/07 00:26:16 Registered route - Method: GET, Path: /index/search
+2025/01/07 00:26:16 Registered route - Method: GET, Path: /index/search-any
+2025/01/07 00:26:16 Registered route - Method: GET, Path: /index/file
+2025/01/07 00:26:16 Registered route - Method: POST, Path: /index/file
+2025/01/07 00:26:16 Registered route - Method: DELETE, Path: /index/file
+2025/01/07 00:26:16 thread pool is running...
+2025/01/07 00:26:16 Server started on port:8080
+2025/01/07 00:26:20 client connection [1] opened
+2025/01/07 00:26:24 error happened read tcp 127.0.0.1:8080->127.0.0.1:64330: wsarecv: An existing connection was forcibly closed by the remote host.
+2025/01/07 00:26:46 inverted index was updated successfully. added files: 0
+2025/01/07 00:26:51 client connection [2] opened
+2025/01/07 00:26:56 error happened read tcp 127.0.0.1:8080->127.0.0.1:64333: wsarecv: An existing connection was forcibly closed by the remote host.
+2025/01/07 00:27:09 client connection [3] opened
+2025/01/07 00:27:16 inverted index was updated successfully. added files: 0
+2025/01/07 00:27:40 threadPool terminated...
+2025/01/07 00:27:40 server stopped
+2025/01/07 00:27:46 inverted index was updated successfully. added files: 0
+2025/01/07 00:28:16 inverted index was updated successfully. added files: 0
+2025/01/07 00:28:46 inverted index was updated successfully. added files: 0
+2025/01/07 00:29:01 error happened read tcp 127.0.0.1:8080->127.0.0.1:64335: wsarecv: An existing connection was forcibly closed by the remote host.
+2025/01/07 00:29:01 Shutting down acceptConnections...
+2025/01/07 00:31:02 Registered route - Method: GET, Path: /health
+2025/01/07 00:31:02 Registered route - Method: GET, Path: /index/search
+2025/01/07 00:31:02 Registered route - Method: GET, Path: /index/search-any
+2025/01/07 00:31:02 Registered route - Method: GET, Path: /index/file
+2025/01/07 00:31:02 Registered route - Method: POST, Path: /index/file
+2025/01/07 00:31:02 Registered route - Method: DELETE, Path: /index/file
+2025/01/07 00:31:02 thread pool is running...
+2025/01/07 00:31:02 Server started on port:8080
+2025/01/07 00:31:05 client connection [1] opened
+2025/01/07 00:31:05 Request: method: GET - path: /index/search
+2025/01/07 00:31:05 task [1] was taken
+2025/01/07 00:31:05 task [1], finished in 507.9µs
+2025/01/07 00:31:05 Request: method: GET - path: /index/search
+2025/01/07 00:31:05 task [2] was taken
+2025/01/07 00:31:05 task [2], finished in 0s
+2025/01/07 00:31:05 client [1] disconnected
+2025/01/07 00:31:30 Shutting down acceptConnections...
+2025/01/07 00:31:30 threadPool terminated...
+2025/01/07 00:31:30 server stopped
+2025/01/07 00:31:31 Registered route - Method: GET, Path: /health
+2025/01/07 00:31:31 Registered route - Method: GET, Path: /index/search
+2025/01/07 00:31:31 Registered route - Method: GET, Path: /index/search-any
+2025/01/07 00:31:31 Registered route - Method: GET, Path: /index/file
+2025/01/07 00:31:31 Registered route - Method: POST, Path: /index/file
+2025/01/07 00:31:31 Registered route - Method: DELETE, Path: /index/file
+2025/01/07 00:31:31 thread pool is running...
+2025/01/07 00:31:31 Server started on port:8080
+2025/01/07 00:32:01 inverted index was updated successfully. added files: 0
+2025/01/07 00:32:03 client connection [1] opened
+2025/01/07 00:32:03 Request: method: GET - path: /index/search
+2025/01/07 00:32:03 task [1] was taken
+2025/01/07 00:32:03 task [1], finished in 529.5µs
+2025/01/07 00:32:03 Request: method: GET - path: /index/search
+2025/01/07 00:32:03 task [2] was taken
+2025/01/07 00:32:03 task [2], finished in 529.5µs
+2025/01/07 00:32:03 client [1] disconnected
+2025/01/07 00:32:16 Shutting down acceptConnections...
+2025/01/07 00:32:16 threadPool terminated...
+2025/01/07 00:32:16 server stopped

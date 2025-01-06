@@ -4,8 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/ArtemLymarenko/parallel-course-work/pkg/streamer"
-	"github.com/ArtemLymarenko/parallel-course-work/pkg/threadpool"
 	"io"
 	"log"
 	"net"
@@ -16,6 +14,9 @@ import (
 	"sync/atomic"
 	"syscall"
 	"time"
+
+	"github.com/ArtemLymarenko/parallel-course-work/pkg/streamer"
+	"github.com/ArtemLymarenko/parallel-course-work/pkg/threadpool"
 )
 
 type ThreadPool interface {
@@ -107,17 +108,7 @@ func (server *Server) acceptConnections() {
 	}
 }
 
-func (server *Server) handleConnections(clientConn net.Conn, connIdx int64) error {
-	rawRequest, err := streamer.ReadBuff(clientConn)
-	if err != nil {
-		return err
-	}
-
-	request, err := server.router.ParseRawRequest(rawRequest)
-	if err != nil {
-		return err
-	}
-
+func (server *Server) scheduleTask(request *tcpRouter.Request, clientConn net.Conn, connIdx int64) (err error) {
 	task := threadpool.NewTask(server.taskIds.Add(1), func() error {
 		defer func() {
 			if !request.ConnectionAlive {
@@ -130,6 +121,7 @@ func (server *Server) handleConnections(clientConn net.Conn, connIdx int64) erro
 				server.logger.Log(msg)
 			}
 		}()
+
 		return server.router.Handle(request, clientConn)
 	})
 
@@ -137,6 +129,25 @@ func (server *Server) handleConnections(clientConn net.Conn, connIdx int64) erro
 	server.logger.Log(msg)
 
 	err = server.threadPool.AddTask(task)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (server *Server) handleConnections(clientConn net.Conn, connIdx int64) error {
+	rawRequest, err := streamer.ReadBuff(clientConn)
+	if err != nil {
+		return err
+	}
+
+	request, err := server.router.ParseRawRequest(rawRequest)
+	if err != nil {
+		return err
+	}
+
+	err = server.scheduleTask(request, clientConn, connIdx)
 	if err != nil {
 		return err
 	}
@@ -179,29 +190,7 @@ func (server *Server) handleSingleRequestAlive(clientConn net.Conn, connIdx int6
 		return err
 	}
 
-	task := threadpool.NewTask(server.taskIds.Add(1), func() error {
-		defer func() {
-			if !request.ConnectionAlive {
-				if err = clientConn.Close(); err != nil {
-					msg := fmt.Sprintf("error occurred: %v", err)
-					server.logger.Log(msg)
-				}
-				msg := fmt.Sprintf("client [%v] disconnected", connIdx)
-				server.logger.Log(msg)
-
-			}
-		}()
-		return server.router.Handle(request, clientConn)
-	})
-
-	msg := fmt.Sprintf("Request: method: %v - path: %v", request.RequestMeta.Method, request.RequestMeta.Path)
-	server.logger.Log(msg)
-	err = server.threadPool.AddTask(task)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return server.scheduleTask(request, clientConn, connIdx)
 }
 
 func (server *Server) handleConnectionAlive(
@@ -210,6 +199,7 @@ func (server *Server) handleConnectionAlive(
 	timeout time.Duration,
 ) error {
 	defer clientConn.Close()
+
 	for {
 		err := server.handleSingleRequestAlive(clientConn, connIdx, timeout)
 		if err != nil {

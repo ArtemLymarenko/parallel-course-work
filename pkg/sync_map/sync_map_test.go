@@ -9,7 +9,7 @@ import (
 )
 
 func TestSyncMap_Put(t *testing.T) {
-	m := NewSyncHashMap[string](3, 2)
+	m := NewSyncHashMapV2[string](3, 2)
 	go func() {
 		m.Put("keasdasdasdy", "") //Same hash
 	}()
@@ -37,7 +37,7 @@ func TestSyncMap_Resize(t *testing.T) {
 			expectedSize := int64(50000)
 			addElements := 50000
 
-			m := NewSyncHashMap[struct{}](initCap, 32)
+			m := NewSyncHashMapV2[string](initCap, 32)
 			wg := sync.WaitGroup{}
 			wg.Add(addElements)
 
@@ -75,7 +75,7 @@ func TestSyncMap_Remove(t *testing.T) {
 	expectedSize := int64(50000)
 	addElements := 50000
 
-	m := NewSyncHashMap[struct{}](initCap, 32)
+	m := NewSyncHashMapV2[string](initCap, 32)
 	wg := sync.WaitGroup{}
 	wg.Add(addElements)
 
@@ -89,7 +89,7 @@ func TestSyncMap_Remove(t *testing.T) {
 	wg.Wait()
 
 	for i := 0; i < addElements; i++ {
-		m.Remove(strconv.Itoa(i), "")
+		m.Remove(strconv.Itoa(i))
 	}
 
 	if m.GetSize() != 0 {

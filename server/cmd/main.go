@@ -1,7 +1,6 @@
 package main
 
 import (
-	"github.com/ArtemLymarenko/parallel-course-work/pkg/mock"
 	"github.com/ArtemLymarenko/parallel-course-work/pkg/threadpool"
 	"server/internal/app"
 	filemanager "server/internal/infrastructure/file_manager"
@@ -15,7 +14,6 @@ import (
 )
 
 func main() {
-	_ = mock.NewLogger()
 	loggerService := logger.MustGet("resources/logs/logs.txt", app.EnvProd)
 	defer loggerService.Close()
 

@@ -9,9 +9,15 @@ if __name__ == "__main__":
             "method": 'GET',
         },
         "body": {
-            "query": "mr",
+            "query": "Bradly Brad Tom Harry Old Main man marry sue",
         },
         "connectionAlive": True,
     }
 
-    client.fetch(request)
+    client.connect()
+    res = client.fetch_open_conn(request)
+    print(res)
+    res2 = client.fetch_open_conn(request)
+    print(res2)
+    client.close()
+

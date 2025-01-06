@@ -11,7 +11,6 @@ type Task struct {
 	CreatedAt time.Time
 	Status    TaskStatus
 	RunFunc   RunFunc
-	IsMoved   bool
 }
 
 func NewTask(id int64, runFunc RunFunc) *Task {
@@ -20,7 +19,6 @@ func NewTask(id int64, runFunc RunFunc) *Task {
 		CreatedAt: time.Now(),
 		Status:    IDLE,
 		RunFunc:   runFunc,
-		IsMoved:   false,
 	}
 }
 
@@ -49,12 +47,4 @@ func (task *Task) SetStatus(status TaskStatus) error {
 
 	task.Status = status
 	return nil
-}
-
-func (task *Task) SetMoved(moved bool) {
-	task.IsMoved = moved
-}
-
-func (task *Task) IsOld() bool {
-	return task.Status == IDLE && !task.IsMoved && time.Since(task.CreatedAt) > 5*time.Second
 }
